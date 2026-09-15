@@ -20,20 +20,35 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.content.Intent
+import androidx.activity.result.contract.ActivityResultContracts
 
 class MainActivity : ComponentActivity() {
+
+    private val csvFilePicker =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+
+            if (uri != null) {
+                // Файл выбран.
+                // Обработку CSV подключим следующим шагом.
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
-            OptimizerApp()
+            OptimizerApp(onPickCsv = {
+                csvFilePicker.launch(
+                    arrayOf("text/csv", "text/comma-separated-values", "*/*")
+                )
+            })
         }
     }
 }
 
 @Composable
-fun OptimizerApp() {
+fun OptimizerApp(onPickCsv: () -> Unit) {
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -78,10 +93,7 @@ fun OptimizerApp() {
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = {
-                    // Пока ничего не делаем.
-                    // Загрузку CSV добавим следующим шагом.
-                },
+                onClick = onPickCsv,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
