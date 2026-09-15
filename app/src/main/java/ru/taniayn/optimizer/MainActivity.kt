@@ -20,17 +20,36 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
+import ru.taniayn.optimizer.data.CsvParser
 
 class MainActivity : ComponentActivity() {
+
+    private var drawCount by mutableIntStateOf(0)
 
     private val csvFilePicker =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
 
             if (uri != null) {
-                // Файл выбран.
-                // Обработку CSV подключим следующим шагом.
+                try {
+
+                    val csvText = contentResolver
+                        .openInputStream(uri)
+                        ?.bufferedReader()
+                        ?.use { it.readText() }
+                        ?: return@registerForActivityResult
+
+                    val draws = CsvParser.parse(csvText)
+
+                    drawCount = draws.size
+
+                } catch (e: Exception) {
+
+                    e.printStackTrace()
+                }
             }
         }
 
@@ -38,17 +57,25 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            OptimizerApp(onPickCsv = {
-                csvFilePicker.launch(
-                    arrayOf("text/csv", "text/comma-separated-values", "*/*")
-                )
-            })
+            OptimizerApp(
+                drawCount = drawCount,
+                onPickCsv = {
+                    csvFilePicker.launch(
+                        arrayOf(
+                            "text/csv",
+                            "text/comma-separated-values",
+                            "*/*"
+                        )
+                    )
+                }
+            )
         }
     }
 }
 
 @Composable
-fun OptimizerApp(onPickCsv: () -> Unit) {
+fun OptimizerApp( drawCount: Int,
+                  onPickCsv: () -> Unit) {
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -86,7 +113,7 @@ fun OptimizerApp(onPickCsv: () -> Unit) {
             Spacer(modifier = Modifier.height(40.dp))
 
             Text(
-                text = "Загружено тиражей: 0",
+                text = "Загружено тиражей: $drawCount",
                 fontSize = 16.sp
             )
 

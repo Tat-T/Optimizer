@@ -1,7 +1,7 @@
 package ru.taniayn.optimizer.model
 
-class RapidoDraw {
-   // val drawNumber: Int,
-   // val numbers: List<Int>,
-   // val additionalNumber: Int
+class RapidoDraw(drawNumber: Int, numbers: List<Int>, additionalNumber: Int) {
+    //val drawNumber: Int,
+    //val numbers: List<Int>,
+    //val additionalNumber: Int
 }
