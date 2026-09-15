@@ -49,7 +49,14 @@ fun OptimizerApp() {
         ) {
 
             Text(
-                text = "🎯 ОПТИМИЗАТОР",
+                text = "🎯",
+                fontSize = 56.sp
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "ОПТИМИЗАТОР",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold
             )
