@@ -32,6 +32,7 @@ class MainActivity : ComponentActivity() {
 
     private var drawCount by mutableIntStateOf(0)
     private var numberFrequency by mutableStateOf<Map<Int, Int>>(emptyMap())
+    private var additionalNumberFrequency by mutableStateOf<Map<Int, Int>>(emptyMap())
 
     private val csvFilePicker =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -52,6 +53,9 @@ class MainActivity : ComponentActivity() {
                     numberFrequency =
                         StatisticsCalculator.calculateMainNumberFrequency(draws)
 
+                    additionalNumberFrequency =
+                        StatisticsCalculator.calculateAdditionalNumberFrequency(draws)
+
                 } catch (e: Exception) {
 
                     e.printStackTrace()
@@ -66,6 +70,7 @@ class MainActivity : ComponentActivity() {
             OptimizerApp(
                 drawCount = drawCount,
                 numberFrequency = numberFrequency,
+                additionalNumberFrequency = additionalNumberFrequency,
                 onPickCsv = {
                     csvFilePicker.launch(
                         arrayOf(
@@ -84,6 +89,7 @@ class MainActivity : ComponentActivity() {
 fun OptimizerApp(
     drawCount: Int,
     numberFrequency: Map<Int, Int>,
+    additionalNumberFrequency: Map<Int, Int>,
     onPickCsv: () -> Unit
 ) {
     androidx.compose.foundation.lazy.LazyColumn(
@@ -187,19 +193,50 @@ fun OptimizerApp(
                 Spacer(modifier = Modifier.height(28.dp))
 
                 Text(
-                    text = "📊 Дополнительное число",
+                    text = "📊 Дополнительные числа",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
+            }
 
-                Text(
-                    text = "Пока статистика дополнительных чисел " +
-                            "будет добавлена следующим шагом.",
-                    fontSize = 15.sp
-                )
+            items(4) { index ->
 
+                val number = index + 1
+                val frequency = additionalNumberFrequency[number] ?: 0
+
+                androidx.compose.material3.Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 3.dp)
+                ) {
+                    androidx.compose.foundation.layout.Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                horizontal = 16.dp,
+                                vertical = 10.dp
+                            ),
+                        horizontalArrangement =
+                            Arrangement.SpaceBetween
+                    ) {
+
+                        Text(
+                            text = "Число $number",
+                            fontSize = 16.sp
+                        )
+
+                        Text(
+                            text = "$frequency раз",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            item {
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
