@@ -144,6 +144,11 @@ fun OptimizerApp(
 
         if (numberFrequency.isNotEmpty()) {
 
+            val averageFrequency =
+                StatisticsCalculator.calculateAverageMainFrequency(
+                    numberFrequency
+                )
+
             item {
                 val averageFrequency =
                     StatisticsCalculator.calculateAverageMainFrequency(
@@ -242,8 +247,16 @@ fun OptimizerApp(
                             fontSize = 16.sp
                         )
 
+                        val deviation =
+                            StatisticsCalculator.calculateDeviation(
+                                frequency,
+                                averageFrequency
+                            )
+
                         Text(
-                            text = "$frequency раз",
+                            text = "$frequency раз  " +
+                                    "(${if (deviation >= 0) "+" else ""}" +
+                                    "%.1f".format(deviation) + ")",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )
