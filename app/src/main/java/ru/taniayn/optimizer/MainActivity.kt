@@ -81,23 +81,19 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun OptimizerApp( drawCount: Int,
-                  numberFrequency: Map<Int, Int>,
-                  onPickCsv: () -> Unit) {
-
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+fun OptimizerApp(
+    drawCount: Int,
+    numberFrequency: Map<Int, Int>,
+    onPickCsv: () -> Unit
+) {
+    androidx.compose.foundation.lazy.LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-
+        item {
             Text(
                 text = "🎯",
                 fontSize = 56.sp
@@ -118,14 +114,14 @@ fun OptimizerApp( drawCount: Int,
                 fontSize = 18.sp
             )
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             Text(
                 text = "Загружено тиражей: $drawCount",
                 fontSize = 16.sp
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             Button(
                 onClick = onPickCsv,
@@ -138,29 +134,73 @@ fun OptimizerApp( drawCount: Int,
             }
 
             Spacer(modifier = Modifier.height(32.dp))
+        }
 
-            if (numberFrequency.isNotEmpty()) {
+        if (numberFrequency.isNotEmpty()) {
+
+            item {
+                Text(
+                    text = "📊 Частота основных чисел",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            items(20) { index ->
+
+                val number = index + 1
+                val frequency = numberFrequency[number] ?: 0
+
+                androidx.compose.material3.Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 3.dp)
+                ) {
+                    androidx.compose.foundation.layout.Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                horizontal = 16.dp,
+                                vertical = 10.dp
+                            ),
+                        horizontalArrangement =
+                            Arrangement.SpaceBetween
+                    ) {
+
+                        Text(
+                            text = "Число $number",
+                            fontSize = 16.sp
+                        )
+
+                        Text(
+                            text = "$frequency раз",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(28.dp))
 
                 Text(
-                    text = "Частота основных чисел",
+                    text = "📊 Дополнительное число",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                numberFrequency.toList()
-                    .sortedBy { it.first }
-                    .forEach { (number, frequency) ->
+                Text(
+                    text = "Пока статистика дополнительных чисел " +
+                            "будет добавлена следующим шагом.",
+                    fontSize = 15.sp
+                )
 
-                        Text(
-                            text = "$number  →  $frequency раз",
-                            fontSize = 16.sp,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 2.dp)
-                        )
-                    }
+                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }
