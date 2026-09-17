@@ -23,12 +23,15 @@ import androidx.compose.ui.unit.sp
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import ru.taniayn.optimizer.data.CsvParser
+import ru.taniayn.optimizer.statistics.StatisticsCalculator
 
 class MainActivity : ComponentActivity() {
 
     private var drawCount by mutableIntStateOf(0)
+    private var numberFrequency by mutableStateOf<Map<Int, Int>>(emptyMap())
 
     private val csvFilePicker =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -46,6 +49,9 @@ class MainActivity : ComponentActivity() {
 
                     drawCount = draws.size
 
+                    numberFrequency =
+                        StatisticsCalculator.calculateMainNumberFrequency(draws)
+
                 } catch (e: Exception) {
 
                     e.printStackTrace()
@@ -59,6 +65,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             OptimizerApp(
                 drawCount = drawCount,
+                numberFrequency = numberFrequency,
                 onPickCsv = {
                     csvFilePicker.launch(
                         arrayOf(
@@ -75,6 +82,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun OptimizerApp( drawCount: Int,
+                  numberFrequency: Map<Int, Int>,
                   onPickCsv: () -> Unit) {
 
     Surface(
@@ -127,6 +135,32 @@ fun OptimizerApp( drawCount: Int,
                     text = "📂  ЗАГРУЗИТЬ CSV",
                     fontSize = 17.sp
                 )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            if (numberFrequency.isNotEmpty()) {
+
+                Text(
+                    text = "Частота основных чисел",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                numberFrequency.toList()
+                    .sortedBy { it.first }
+                    .forEach { (number, frequency) ->
+
+                        Text(
+                            text = "$number  →  $frequency раз",
+                            fontSize = 16.sp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 2.dp)
+                        )
+                    }
             }
         }
     }
