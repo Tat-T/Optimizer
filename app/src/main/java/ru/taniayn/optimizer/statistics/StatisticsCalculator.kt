@@ -75,4 +75,50 @@ object StatisticsCalculator {
 
         return frequency[number] ?: 0
     }
+
+    /**
+     * Средняя частота выпадения одного основного числа.
+     */
+    fun calculateAverageMainFrequency(
+        frequency: Map<Int, Int>
+    ): Double {
+
+        if (frequency.isEmpty()) {
+            return 0.0
+        }
+
+        return frequency.values.average()
+    }
+
+    /**
+     * Самое часто выпадающее основное число.
+     */
+    fun findMostFrequentNumber(
+        frequency: Map<Int, Int>
+    ):  Map.Entry<Int, Int>? {
+
+        return frequency.maxByOrNull { it.value }
+    }
+
+    /**
+     * Самое редко выпадающее основное число.
+     */
+    fun findLeastFrequentNumber(
+        frequency: Map<Int, Int>
+    ):  Map.Entry<Int, Int>? {
+
+        return frequency.minByOrNull { it.value }
+    }
+
+    /**
+     * Отклонение частоты конкретного числа
+     * от средней частоты.
+     */
+    fun calculateDeviation(
+        frequency: Int,
+        average: Double
+    ): Double {
+
+        return frequency - average
+    }
 }

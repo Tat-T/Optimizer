@@ -145,6 +145,68 @@ fun OptimizerApp(
         if (numberFrequency.isNotEmpty()) {
 
             item {
+                val averageFrequency =
+                    StatisticsCalculator.calculateAverageMainFrequency(
+                        numberFrequency
+                    )
+
+                val mostFrequent =
+                    StatisticsCalculator.findMostFrequentNumber(
+                        numberFrequency
+                    )
+
+                val leastFrequent =
+                    StatisticsCalculator.findLeastFrequentNumber(
+                        numberFrequency
+                    )
+
+                androidx.compose.material3.Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 20.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+
+                        Text(
+                            text = "🔎 Краткий анализ",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = "Средняя частота: " +
+                                    "%.1f".format(averageFrequency),
+                            fontSize = 16.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        mostFrequent?.let {
+                            Text(
+                                text = "Самое частое: " +
+                                        "${it.key} — ${it.value} раз",
+                                fontSize = 16.sp
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        leastFrequent?.let {
+                            Text(
+                                text = "Самое редкое: " +
+                                        "${it.key} — ${it.value} раз",
+                                fontSize = 16.sp
+                            )
+                        }
+                    }
+                }
+            }
+
+            item {
                 Text(
                     text = "📊 Частота основных чисел",
                     fontSize = 20.sp,
