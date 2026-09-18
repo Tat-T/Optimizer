@@ -27,6 +27,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import ru.taniayn.optimizer.data.CsvParser
 import ru.taniayn.optimizer.statistics.StatisticsCalculator
+import ru.taniayn.optimizer.ui.FrequencyChart
 
 class MainActivity : ComponentActivity() {
 
@@ -216,6 +217,12 @@ fun OptimizerApp(
                     text = "📊 Частота основных чисел",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                FrequencyChart(
+                    frequency = numberFrequency
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
