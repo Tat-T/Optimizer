@@ -30,6 +30,9 @@ import ru.taniayn.optimizer.statistics.StatisticsCalculator
 import ru.taniayn.optimizer.ui.FrequencyChart
 import androidx.compose.runtime.mutableStateOf
 import ru.taniayn.optimizer.ui.AnalysisScreen
+import ru.taniayn.optimizer.backtest.BacktestResult
+import ru.taniayn.optimizer.backtest.Backtester
+import ru.taniayn.optimizer.backtest.Strategies
 
 class MainActivity : ComponentActivity() {
 
@@ -37,6 +40,7 @@ class MainActivity : ComponentActivity() {
     private var showAnalysis by mutableStateOf(false)
     private var numberFrequency by mutableStateOf<Map<Int, Int>>(emptyMap())
     private var additionalNumberFrequency by mutableStateOf<Map<Int, Int>>(emptyMap())
+    private var backtestResult by mutableStateOf<BacktestResult?>(null)
 
     private val csvFilePicker =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -60,6 +64,13 @@ class MainActivity : ComponentActivity() {
                     additionalNumberFrequency =
                         StatisticsCalculator.calculateAdditionalNumberFrequency(draws)
 
+                    backtestResult =
+                        Backtester.run(
+                            draws = draws,
+                            trainSize = 385,
+                            strategy = Strategies::cold200,
+                            strategyName = "COLD 200"
+                        )
                 } catch (e: Exception) {
 
                     e.printStackTrace()
@@ -76,6 +87,7 @@ class MainActivity : ComponentActivity() {
                 numberFrequency = numberFrequency,
                 additionalNumberFrequency = additionalNumberFrequency,
                 showAnalysis = showAnalysis,
+                backtestResult = backtestResult,
                 onShowAnalysis = {
                     showAnalysis = true
                 },
@@ -101,6 +113,7 @@ fun OptimizerApp(
     drawCount: Int,
     numberFrequency: Map<Int, Int>,
     additionalNumberFrequency: Map<Int, Int>,
+    backtestResult: BacktestResult?,
     showAnalysis: Boolean,
     onShowAnalysis: () -> Unit,
     onBack: () -> Unit,
@@ -171,6 +184,51 @@ fun OptimizerApp(
                 Text(
                     text = "📊  АНАЛИЗ",
                     fontSize = 17.sp
+                )
+            }
+
+            if (backtestResult != null) {
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    text = "🧪 BACKTEST",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = "Стратегия: ${backtestResult.strategyName}",
+                    fontSize = 16.sp
+                )
+
+                Text(
+                    text = "Проверено тиражей: ${backtestResult.testedDraws}",
+                    fontSize = 16.sp
+                )
+
+                Text(
+                    text = "Среднее совпадение: " +
+                            "%.3f".format(backtestResult.averageOverlap),
+                    fontSize = 16.sp
+                )
+
+                Text(
+                    text = "4+ совпадения: ${backtestResult.matches4OrMore}",
+                    fontSize = 16.sp
+                )
+
+                Text(
+                    text = "5+ совпадений: ${backtestResult.matches5OrMore}",
+                    fontSize = 16.sp
+                )
+
+                Text(
+                    text = "Случайный ориентир: " +
+                            "%.1f".format(backtestResult.randomBaseline),
+                    fontSize = 16.sp
                 )
             }
 
