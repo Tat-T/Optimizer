@@ -49,6 +49,12 @@ fun BacktestTable(
                 )
 
                 Text(
+                    text = "Δ",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp
+                )
+
+                Text(
                     text = "4+",
                     fontWeight = FontWeight.Bold,
                     fontSize = 13.sp
@@ -61,6 +67,9 @@ fun BacktestTable(
                 )
             }
 
+            val randomResult =
+                results.firstOrNull { it.strategyName == "RANDOM" }
+
             results.forEach { result ->
 
                 val percent4 =
@@ -70,6 +79,14 @@ fun BacktestTable(
                 val percent5 =
                     result.matches5OrMore.toDouble() /
                             result.testedDraws * 100
+
+                val delta =
+                    if (randomResult != null) {
+                        result.averageOverlap -
+                                randomResult.averageOverlap
+                    } else {
+                        0.0
+                    }
 
                 Row(
                     modifier = Modifier
@@ -87,6 +104,11 @@ fun BacktestTable(
                         text = "%.3f".format(
                             result.averageOverlap
                         ),
+                        fontSize = 13.sp
+                    )
+
+                    Text(
+                        text = "%+.3f".format(delta),
                         fontSize = 13.sp
                     )
 

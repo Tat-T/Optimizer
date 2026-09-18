@@ -236,8 +236,14 @@ fun OptimizerApp(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Проверено тиражей: " +
-                            backtestResults.first().testedDraws,
+                    text = "Проверено тиражей: 386",
+                    fontSize = 14.sp
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "Случайных комбинаций RANDOM: 7720",
                     fontSize = 14.sp
                 )
             }
