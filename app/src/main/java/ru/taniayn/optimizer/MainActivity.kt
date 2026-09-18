@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
     private var showAnalysis by mutableStateOf(false)
     private var numberFrequency by mutableStateOf<Map<Int, Int>>(emptyMap())
     private var additionalNumberFrequency by mutableStateOf<Map<Int, Int>>(emptyMap())
-    private var backtestResult by mutableStateOf<BacktestResult?>(null)
+    private var backtestResults by mutableStateOf<List<BacktestResult>>(emptyList())
 
     private val csvFilePicker =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -64,13 +64,35 @@ class MainActivity : ComponentActivity() {
                     additionalNumberFrequency =
                         StatisticsCalculator.calculateAdditionalNumberFrequency(draws)
 
-                    backtestResult =
+                    backtestResults = listOf(
+                        Backtester.run(
+                            draws = draws,
+                            trainSize = 385,
+                            strategy = Strategies::hot200,
+                            strategyName = "HOT 200"
+                        ),
+
                         Backtester.run(
                             draws = draws,
                             trainSize = 385,
                             strategy = Strategies::cold200,
                             strategyName = "COLD 200"
+                        ),
+
+                        Backtester.run(
+                            draws = draws,
+                            trainSize = 385,
+                            strategy = Strategies::hot50,
+                            strategyName = "HOT 50"
+                        ),
+
+                        Backtester.run(
+                            draws = draws,
+                            trainSize = 385,
+                            strategy = Strategies::cold50,
+                            strategyName = "COLD 50"
                         )
+                    )
                 } catch (e: Exception) {
 
                     e.printStackTrace()
@@ -87,7 +109,7 @@ class MainActivity : ComponentActivity() {
                 numberFrequency = numberFrequency,
                 additionalNumberFrequency = additionalNumberFrequency,
                 showAnalysis = showAnalysis,
-                backtestResult = backtestResult,
+                backtestResults = backtestResults,
                 onShowAnalysis = {
                     showAnalysis = true
                 },
@@ -113,7 +135,7 @@ fun OptimizerApp(
     drawCount: Int,
     numberFrequency: Map<Int, Int>,
     additionalNumberFrequency: Map<Int, Int>,
-    backtestResult: BacktestResult?,
+    backtestResults: List<BacktestResult>,
     showAnalysis: Boolean,
     onShowAnalysis: () -> Unit,
     onBack: () -> Unit,
@@ -187,7 +209,7 @@ fun OptimizerApp(
                 )
             }
 
-            if (backtestResult != null) {
+            if (backtestResults.isNotEmpty()) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -197,38 +219,59 @@ fun OptimizerApp(
                     fontWeight = FontWeight.Bold
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+
+                backtestResults.forEach { result ->
+
+                    androidx.compose.material3.Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    ) {
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+
+                            Text(
+                                text = result.strategyName,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Text(
+                                text = "Среднее совпадение: " +
+                                        "%.3f".format(result.averageOverlap),
+                                fontSize = 16.sp
+                            )
+
+                            Text(
+                                text = "4+ совпадения: ${result.matches4OrMore}",
+                                fontSize = 16.sp
+                            )
+
+                            Text(
+                                text = "5+ совпадений: ${result.matches5OrMore}",
+                                fontSize = 16.sp
+                            )
+
+                            Text(
+                                text = "Проверено тиражей: ${result.testedDraws}",
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Стратегия: ${backtestResult.strategyName}",
-                    fontSize = 16.sp
-                )
-
-                Text(
-                    text = "Проверено тиражей: ${backtestResult.testedDraws}",
-                    fontSize = 16.sp
-                )
-
-                Text(
-                    text = "Среднее совпадение: " +
-                            "%.3f".format(backtestResult.averageOverlap),
-                    fontSize = 16.sp
-                )
-
-                Text(
-                    text = "4+ совпадения: ${backtestResult.matches4OrMore}",
-                    fontSize = 16.sp
-                )
-
-                Text(
-                    text = "5+ совпадений: ${backtestResult.matches5OrMore}",
-                    fontSize = 16.sp
-                )
-
-                Text(
-                    text = "Случайный ориентир: " +
-                            "%.1f".format(backtestResult.randomBaseline),
-                    fontSize = 16.sp
+                    text = "Случайный ориентир: 3.2",
+                    fontSize = 15.sp
                 )
             }
 
