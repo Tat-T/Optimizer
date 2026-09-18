@@ -31,6 +31,7 @@ fun BacktestTable(
                 .padding(12.dp)
         ) {
 
+            // Заголовок таблицы
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -38,29 +39,37 @@ fun BacktestTable(
                 Text(
                     text = "Стратегия",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
+                    fontSize = 13.sp
                 )
 
                 Text(
                     text = "Среднее",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
+                    fontSize = 13.sp
                 )
 
                 Text(
                     text = "4+",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
+                    fontSize = 13.sp
                 )
 
                 Text(
                     text = "5+",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
+                    fontSize = 13.sp
                 )
             }
 
             results.forEach { result ->
+
+                val percent4 =
+                    result.matches4OrMore.toDouble() /
+                            result.testedDraws * 100
+
+                val percent5 =
+                    result.matches5OrMore.toDouble() /
+                            result.testedDraws * 100
 
                 Row(
                     modifier = Modifier
@@ -71,22 +80,26 @@ fun BacktestTable(
 
                     Text(
                         text = result.strategyName,
-                        fontSize = 14.sp
+                        fontSize = 13.sp
                     )
 
                     Text(
-                        text = "%.3f".format(result.averageOverlap),
-                        fontSize = 14.sp
+                        text = "%.3f".format(
+                            result.averageOverlap
+                        ),
+                        fontSize = 13.sp
                     )
 
                     Text(
-                        text = result.matches4OrMore.toString(),
-                        fontSize = 14.sp
+                        text = "${result.matches4OrMore} " +
+                                "(%.1f%%)".format(percent4),
+                        fontSize = 13.sp
                     )
 
                     Text(
-                        text = result.matches5OrMore.toString(),
-                        fontSize = 14.sp
+                        text = "${result.matches5OrMore} " +
+                                "(%.1f%%)".format(percent5),
+                        fontSize = 13.sp
                     )
                 }
             }
@@ -100,13 +113,13 @@ fun BacktestTable(
 
                 Text(
                     text = "Случайный ориентир",
-                    fontSize = 14.sp,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Bold
                 )
 
                 Text(
                     text = "3.200",
-                    fontSize = 14.sp,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
