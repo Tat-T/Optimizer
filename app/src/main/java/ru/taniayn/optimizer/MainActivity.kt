@@ -34,7 +34,7 @@ import ru.taniayn.optimizer.ui.AnalysisScreen
 import ru.taniayn.optimizer.backtest.BacktestResult
 import ru.taniayn.optimizer.backtest.Backtester
 import ru.taniayn.optimizer.backtest.Strategies
-
+import ru.taniayn.optimizer.backtest.StatisticalTest
 
 class MainActivity : ComponentActivity() {
 
@@ -78,28 +78,104 @@ class MainActivity : ComponentActivity() {
                             trainSize = 385,
                             strategy = Strategies::hot200,
                             strategyName = "HOT 200"
-                        ),
+                        ).let { result ->
+
+                            val statisticalResult =
+                                StatisticalTest.compareWithRandom(
+                                    draws = draws,
+                                    trainSize = 385,
+                                    strategy = Strategies::hot200
+                                )
+
+                            result.copy(
+                                differenceAgainstRandom =
+                                    statisticalResult.averageDifference,
+
+                                zScore =
+                                    statisticalResult.zScore,
+
+                                pValue =
+                                    statisticalResult.pValue
+                            )
+                        },
 
                         Backtester.run(
                             draws = draws,
                             trainSize = 385,
                             strategy = Strategies::cold200,
                             strategyName = "COLD 200"
-                        ),
+                        ).let { result ->
+
+                            val statisticalResult =
+                                StatisticalTest.compareWithRandom(
+                                    draws = draws,
+                                    trainSize = 385,
+                                    strategy = Strategies::cold200
+                                )
+
+                            result.copy(
+                                differenceAgainstRandom =
+                                    statisticalResult.averageDifference,
+
+                                zScore =
+                                    statisticalResult.zScore,
+
+                                pValue =
+                                    statisticalResult.pValue
+                            )
+                        },
 
                         Backtester.run(
                             draws = draws,
                             trainSize = 385,
                             strategy = Strategies::hot50,
                             strategyName = "HOT 50"
-                        ),
+                        ).let { result ->
+
+                            val statisticalResult =
+                                StatisticalTest.compareWithRandom(
+                                    draws = draws,
+                                    trainSize = 385,
+                                    strategy = Strategies::hot50
+                                )
+
+                            result.copy(
+                                differenceAgainstRandom =
+                                    statisticalResult.averageDifference,
+
+                                zScore =
+                                    statisticalResult.zScore,
+
+                                pValue =
+                                    statisticalResult.pValue
+                            )
+                        },
 
                         Backtester.run(
                             draws = draws,
                             trainSize = 385,
                             strategy = Strategies::cold50,
                             strategyName = "COLD 50"
-                        )
+                        ).let { result ->
+
+                            val statisticalResult =
+                                StatisticalTest.compareWithRandom(
+                                    draws = draws,
+                                    trainSize = 385,
+                                    strategy = Strategies::cold50
+                                )
+
+                            result.copy(
+                                differenceAgainstRandom =
+                                    statisticalResult.averageDifference,
+
+                                zScore =
+                                    statisticalResult.zScore,
+
+                                pValue =
+                                    statisticalResult.pValue
+                            )
+                        }
                     )
                 } catch (e: Exception) {
 

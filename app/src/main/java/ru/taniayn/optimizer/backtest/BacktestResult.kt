@@ -5,5 +5,8 @@ data class BacktestResult(
     val testedDraws: Int,
     val averageOverlap: Double,
     val matches4OrMore: Int,
-    val matches5OrMore: Int
+    val matches5OrMore: Int,
+    val differenceAgainstRandom: Double = 0.0,
+    val zScore: Double = 0.0,
+    val pValue: Double = 1.0
 )

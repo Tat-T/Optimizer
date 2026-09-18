@@ -65,6 +65,18 @@ fun BacktestTable(
                     fontWeight = FontWeight.Bold,
                     fontSize = 13.sp
                 )
+
+                Text(
+                    text = "Z",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp
+                )
+
+                Text(
+                    text = "p",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp
+                )
             }
 
             val randomResult =
@@ -121,6 +133,16 @@ fun BacktestTable(
                     Text(
                         text = "${result.matches5OrMore} " +
                                 "(%.1f%%)".format(percent5),
+                        fontSize = 13.sp
+                    )
+
+                    Text(
+                        text = "%.3f".format(result.zScore),
+                        fontSize = 13.sp
+                    )
+
+                    Text(
+                        text = "%.4f".format(result.pValue),
                         fontSize = 13.sp
                     )
                 }

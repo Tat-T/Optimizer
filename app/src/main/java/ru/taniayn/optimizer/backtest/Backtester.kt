@@ -70,7 +70,6 @@ object Backtester {
             matches5OrMore = matches5OrMore
         )
     }
-
     /**
      * RANDOM BACKTEST
      *
@@ -142,5 +141,53 @@ object Backtester {
             matches4OrMore = matches4OrMore,
             matches5OrMore = matches5OrMore
         )
+    }
+    fun runAgainstRandom(
+        draws: List<RapidoDraw>,
+        trainSize: Int,
+        strategy: (List<RapidoDraw>) -> List<Int>,
+        strategyName: String
+    ): Double {
+
+        if (draws.size <= trainSize) {
+            return 0.0
+        }
+
+        var totalDifference = 0
+
+        for (i in trainSize until draws.size) {
+
+            val history = draws.subList(0, i)
+
+            // Комбинация стратегии
+            val strategyNumbers =
+                strategy(history)
+                    .toSet()
+
+            // Одна случайная комбинация
+            val randomNumbers =
+                RandomStrategy.generate()
+                    .toSet()
+
+            // Фактический тираж
+            val actualNumbers =
+                draws[i].numbers.toSet()
+
+            val strategyOverlap =
+                strategyNumbers
+                    .intersect(actualNumbers)
+                    .size
+
+            val randomOverlap =
+                randomNumbers
+                    .intersect(actualNumbers)
+                    .size
+
+            totalDifference +=
+                strategyOverlap - randomOverlap
+        }
+
+        return totalDifference.toDouble() /
+                (draws.size - trainSize)
     }
 }
