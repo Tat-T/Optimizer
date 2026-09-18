@@ -67,6 +67,12 @@ class MainActivity : ComponentActivity() {
                         StatisticsCalculator.calculateAdditionalNumberFrequency(draws)
 
                     backtestResults = listOf(
+
+                        Backtester.runRandom(
+                            draws = draws,
+                            trainSize = 385
+                        ),
+
                         Backtester.run(
                             draws = draws,
                             trainSize = 385,
