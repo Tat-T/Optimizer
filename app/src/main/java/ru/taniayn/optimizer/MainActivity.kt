@@ -28,10 +28,13 @@ import androidx.compose.runtime.setValue
 import ru.taniayn.optimizer.data.CsvParser
 import ru.taniayn.optimizer.statistics.StatisticsCalculator
 import ru.taniayn.optimizer.ui.FrequencyChart
+import androidx.compose.runtime.mutableStateOf
+import ru.taniayn.optimizer.ui.AnalysisScreen
 
 class MainActivity : ComponentActivity() {
 
     private var drawCount by mutableIntStateOf(0)
+    private var showAnalysis by mutableStateOf(false)
     private var numberFrequency by mutableStateOf<Map<Int, Int>>(emptyMap())
     private var additionalNumberFrequency by mutableStateOf<Map<Int, Int>>(emptyMap())
 
@@ -72,6 +75,13 @@ class MainActivity : ComponentActivity() {
                 drawCount = drawCount,
                 numberFrequency = numberFrequency,
                 additionalNumberFrequency = additionalNumberFrequency,
+                showAnalysis = showAnalysis,
+                onShowAnalysis = {
+                    showAnalysis = true
+                },
+                onBack = {
+                    showAnalysis = false
+                },
                 onPickCsv = {
                     csvFilePicker.launch(
                         arrayOf(
@@ -91,8 +101,20 @@ fun OptimizerApp(
     drawCount: Int,
     numberFrequency: Map<Int, Int>,
     additionalNumberFrequency: Map<Int, Int>,
+    showAnalysis: Boolean,
+    onShowAnalysis: () -> Unit,
+    onBack: () -> Unit,
     onPickCsv: () -> Unit
 ) {
+    if (showAnalysis) {
+        AnalysisScreen(
+            drawCount = drawCount,
+            numberFrequency = numberFrequency,
+            additionalNumberFrequency = additionalNumberFrequency,
+            onBack = onBack
+        )
+        return
+    }
     androidx.compose.foundation.lazy.LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -136,6 +158,18 @@ fun OptimizerApp(
             ) {
                 Text(
                     text = "📂  ЗАГРУЗИТЬ CSV",
+                    fontSize = 17.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Button(
+                onClick = onShowAnalysis,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "📊  АНАЛИЗ",
                     fontSize = 17.sp
                 )
             }
