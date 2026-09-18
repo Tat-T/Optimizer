@@ -27,12 +27,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import ru.taniayn.optimizer.data.CsvParser
 import ru.taniayn.optimizer.statistics.StatisticsCalculator
+import ru.taniayn.optimizer.ui.BacktestTable
 import ru.taniayn.optimizer.ui.FrequencyChart
 import androidx.compose.runtime.mutableStateOf
 import ru.taniayn.optimizer.ui.AnalysisScreen
 import ru.taniayn.optimizer.backtest.BacktestResult
 import ru.taniayn.optimizer.backtest.Backtester
 import ru.taniayn.optimizer.backtest.Strategies
+
 
 class MainActivity : ComponentActivity() {
 
@@ -221,57 +223,16 @@ fun OptimizerApp(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                backtestResults.forEach { result ->
-
-                    androidx.compose.material3.Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                    ) {
-
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-
-                            Text(
-                                text = result.strategyName,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Text(
-                                text = "Среднее совпадение: " +
-                                        "%.3f".format(result.averageOverlap),
-                                fontSize = 16.sp
-                            )
-
-                            Text(
-                                text = "4+ совпадения: ${result.matches4OrMore}",
-                                fontSize = 16.sp
-                            )
-
-                            Text(
-                                text = "5+ совпадений: ${result.matches5OrMore}",
-                                fontSize = 16.sp
-                            )
-
-                            Text(
-                                text = "Проверено тиражей: ${result.testedDraws}",
-                                fontSize = 14.sp
-                            )
-                        }
-                    }
-                }
+                BacktestTable(
+                    results = backtestResults
+                )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Случайный ориентир: 3.2",
-                    fontSize = 15.sp
+                    text = "Проверено тиражей: " +
+                            backtestResults.first().testedDraws,
+                    fontSize = 14.sp
                 )
             }
 
