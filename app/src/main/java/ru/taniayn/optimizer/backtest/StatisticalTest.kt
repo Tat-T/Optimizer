@@ -48,6 +48,15 @@ object StatisticalTest {
 
         val differences = mutableListOf<Double>()
 
+        /*
+         * Для каждого тестового тиража создаём
+         * один RANDOM-билет.
+         *
+         * Благодаря фиксированному seed в RandomStrategy
+         * последовательность RANDOM воспроизводима.
+         *
+         * Одна и та же схема используется для каждой стратегии.
+         */
         for (i in trainSize until draws.size) {
 
             val history = draws.subList(0, i)
@@ -71,17 +80,17 @@ object StatisticalTest {
                     .intersect(actualNumbers)
                     .size
 
-            val difference =
+            differences.add(
                 (strategyOverlap - randomOverlap).toDouble()
-
-            differences.add(difference)
+            )
         }
 
         val n = differences.size
 
         if (n < 2) {
             return StatisticalResult(
-                averageDifference = differences.firstOrNull() ?: 0.0,
+                averageDifference =
+                    differences.firstOrNull() ?: 0.0,
                 standardDeviation = 0.0,
                 standardError = 0.0,
                 zScore = 0.0,
