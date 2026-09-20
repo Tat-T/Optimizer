@@ -120,7 +120,7 @@ object StatisticalTest {
             }
 
         val pValue =
-            twoSidedPValue(zScore)
+            permutationPValue(differences)
 
         return StatisticalResult(
             averageDifference = mean,
@@ -129,6 +129,100 @@ object StatisticalTest {
             zScore = zScore,
             pValue = pValue
         )
+    }
+
+    private fun permutationPValue(
+        differences: List<Double>
+    ): Double {
+
+        if (differences.isEmpty()) {
+            return 1.0
+        }
+
+        /*
+         * Точный перестановочный тест знаков.
+         *
+         * Для каждой разницы:
+         *
+         *   d
+         *
+         * рассматриваем два равновероятных варианта:
+         *
+         *   +d
+         *   -d
+         *
+         * DP хранит вероятность каждой возможной
+         * суммы после перестановок знаков.
+         */
+
+        val integerDifferences =
+            differences.map { it.toInt() }
+
+        val observedSum =
+            integerDifferences.sum()
+
+        val maxSum =
+            integerDifferences.sumOf { abs(it) }
+
+        if (maxSum == 0) {
+            return 1.0
+        }
+
+        val size =
+            maxSum * 2 + 1
+
+        var probabilities =
+            DoubleArray(size)
+
+        val offset = maxSum
+
+        probabilities[offset] = 1.0
+
+        var currentMax = 0
+
+        for (difference in integerDifferences) {
+
+            val next =
+                DoubleArray(size)
+
+            for (sum in -currentMax..currentMax) {
+
+                val probability =
+                    probabilities[sum + offset]
+
+                if (probability == 0.0) {
+                    continue
+                }
+
+                next[
+                    sum + difference + offset
+                ] += probability * 0.5
+
+                next[
+                    sum - difference + offset
+                ] += probability * 0.5
+            }
+
+            currentMax += abs(difference)
+
+            probabilities = next
+        }
+
+        val observedAbs =
+            abs(observedSum)
+
+        var pValue = 0.0
+
+        for (sum in -maxSum..maxSum) {
+
+            if (abs(sum) >= observedAbs) {
+
+                pValue +=
+                    probabilities[sum + offset]
+            }
+        }
+
+        return pValue.coerceIn(0.0, 1.0)
     }
 
     private fun twoSidedPValue(
