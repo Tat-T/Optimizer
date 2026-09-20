@@ -93,12 +93,7 @@ fun BacktestTable(
                             result.testedDraws * 100
 
                 val delta =
-                    if (randomResult != null) {
-                        result.averageOverlap -
-                                randomResult.averageOverlap
-                    } else {
-                        0.0
-                    }
+                    result.differenceAgainstRandom
 
                 Row(
                     modifier = Modifier

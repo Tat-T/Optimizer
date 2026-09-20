@@ -65,7 +65,9 @@ object StatisticalTest {
                 strategy(history).toSet()
 
             val randomNumbers =
-                RandomStrategy.generate().toSet()
+                RandomStrategy
+                    .generateForDraw(i)
+                    .toSet()
 
             val actualNumbers =
                 draws[i].numbers.toSet()
