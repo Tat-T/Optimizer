@@ -92,8 +92,6 @@ object Backtester {
             )
         }
 
-        val randomTicketsPerDraw = 20
-
         var totalOverlap = 0
         var matches4OrMore = 0
         var matches5OrMore = 0
@@ -104,44 +102,55 @@ object Backtester {
             val actualNumbers =
                 draws[i].numbers.toSet()
 
-            repeat(randomTicketsPerDraw) {
+            /*
+             * Используем тот же RANDOM,
+             * который используется в
+             * StatisticalTest.
+             *
+             * Для каждого тестового тиража
+             * существует один фиксированный
+             * RANDOM-билет.
+             */
+            val predictedNumbers =
+                RandomStrategy
+                    .generateForDraw(i)
+                    .toSet()
 
-                val predictedNumbers =
-                    RandomStrategy.generate()
+            val overlap =
+                predictedNumbers
+                    .intersect(actualNumbers)
+                    .size
 
-                val overlap =
-                    predictedNumbers
-                        .toSet()
-                        .intersect(actualNumbers)
-                        .size
+            totalOverlap += overlap
 
-                totalOverlap += overlap
+            if (overlap >= 4) {
+                matches4OrMore++
+            }
 
-                if (overlap >= 4) matches4OrMore++
-                if (overlap >= 5) matches5OrMore++
+            if (overlap >= 5) {
+                matches5OrMore++
             }
 
             testedDraws++
         }
 
-        val totalRandomTickets =
-            testedDraws * randomTicketsPerDraw
-
         val averageOverlap =
-            if (totalRandomTickets > 0) {
-                totalOverlap.toDouble() / totalRandomTickets
+            if (testedDraws > 0) {
+                totalOverlap.toDouble() /
+                        testedDraws
             } else {
                 0.0
             }
 
         return BacktestResult(
             strategyName = "RANDOM",
-            testedDraws = totalRandomTickets,
+            testedDraws = testedDraws,
             averageOverlap = averageOverlap,
             matches4OrMore = matches4OrMore,
             matches5OrMore = matches5OrMore
         )
     }
+
     fun runAgainstRandom(
         draws: List<RapidoDraw>,
         trainSize: Int,
