@@ -174,4 +174,99 @@ object Strategies {
             .take(8)
             .map { it.first }
     }
+
+    fun hot(
+        history: List<RapidoDraw>,
+        window: Int
+    ): List<Int> {
+
+        if (history.isEmpty()) {
+            return emptyList()
+        }
+
+        val actualWindow =
+            minOf(window, history.size)
+
+        val recentHistory =
+            history.takeLast(actualWindow)
+
+        val frequency =
+            (1..20)
+                .associateWith { 0 }
+                .toMutableMap()
+
+        recentHistory.forEach { draw ->
+
+            draw.numbers.forEach { number ->
+
+                if (number in 1..20) {
+
+                    frequency[number] =
+                        frequency.getValue(number) + 1
+                }
+            }
+        }
+
+        return frequency
+            .toList()
+            .sortedWith(
+                compareByDescending<Pair<Int, Int>> {
+                    it.second
+                }.thenBy {
+                    it.first
+                }
+            )
+            .take(8)
+            .map {
+                it.first
+            }
+    }
+
+
+    fun cold(
+        history: List<RapidoDraw>,
+        window: Int
+    ): List<Int> {
+
+        if (history.isEmpty()) {
+            return emptyList()
+        }
+
+        val actualWindow =
+            minOf(window, history.size)
+
+        val recentHistory =
+            history.takeLast(actualWindow)
+
+        val frequency =
+            (1..20)
+                .associateWith { 0 }
+                .toMutableMap()
+
+        recentHistory.forEach { draw ->
+
+            draw.numbers.forEach { number ->
+
+                if (number in 1..20) {
+
+                    frequency[number] =
+                        frequency.getValue(number) + 1
+                }
+            }
+        }
+
+        return frequency
+            .toList()
+            .sortedWith(
+                compareBy<Pair<Int, Int>> {
+                    it.second
+                }.thenBy {
+                    it.first
+                }
+            )
+            .take(8)
+            .map {
+                it.first
+            }
+    }
 }
