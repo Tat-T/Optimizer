@@ -35,6 +35,7 @@ import ru.taniayn.optimizer.backtest.BacktestResult
 import ru.taniayn.optimizer.backtest.Backtester
 import ru.taniayn.optimizer.backtest.Strategies
 import ru.taniayn.optimizer.backtest.StatisticalTest
+import ru.taniayn.optimizer.backtest.WindowOptimizer
 
 class MainActivity : ComponentActivity() {
 
@@ -43,6 +44,7 @@ class MainActivity : ComponentActivity() {
     private var numberFrequency by mutableStateOf<Map<Int, Int>>(emptyMap())
     private var additionalNumberFrequency by mutableStateOf<Map<Int, Int>>(emptyMap())
     private var backtestResults by mutableStateOf<List<BacktestResult>>(emptyList())
+    private var optimizationResults by mutableStateOf<List<BacktestResult>>(emptyList())
 
     private val csvFilePicker =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -65,6 +67,16 @@ class MainActivity : ComponentActivity() {
 
                     additionalNumberFrequency =
                         StatisticsCalculator.calculateAdditionalNumberFrequency(draws)
+
+                    optimizationResults =
+                        WindowOptimizer.testAllHotWindows(
+                            draws = draws,
+                            trainSize = 385
+                        ) +
+                                WindowOptimizer.testAllColdWindows(
+                                    draws = draws,
+                                    trainSize = 385
+                                )
 
                     backtestResults = listOf(
 
