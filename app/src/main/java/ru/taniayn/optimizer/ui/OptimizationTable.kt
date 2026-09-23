@@ -66,6 +66,12 @@ fun OptimizationTable(
             fontSize = 14.sp,
             modifier = Modifier.padding(8.dp)
         )
+
+        Text(
+            text = "p adj.",
+            fontSize = 14.sp,
+            modifier = Modifier.padding(8.dp)
+        )
     }
 
     results.forEach { result ->
@@ -131,6 +137,14 @@ fun OptimizationTable(
             Text(
                 text = "%.4f".format(
                     result.pValue
+                ),
+                fontSize = 14.sp,
+                modifier = Modifier.padding(8.dp)
+            )
+
+            Text(
+                text = "%.4f".format(
+                    result.adjustedPValue
                 ),
                 fontSize = 14.sp,
                 modifier = Modifier.padding(8.dp)

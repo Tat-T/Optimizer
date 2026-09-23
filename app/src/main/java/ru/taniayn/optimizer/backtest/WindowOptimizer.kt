@@ -1,6 +1,7 @@
 package ru.taniayn.optimizer.backtest
 
 import ru.taniayn.optimizer.model.RapidoDraw
+import ru.taniayn.optimizer.backtest.StatisticalTest
 
 object WindowOptimizer {
 
@@ -139,6 +140,29 @@ object WindowOptimizer {
                 draws = draws,
                 trainSize = trainSize,
                 window = window
+            )
+        }
+    }
+
+    fun applyHolmCorrection(
+        results: List<BacktestResult>
+    ): List<BacktestResult> {
+
+        if (results.isEmpty()) {
+            return emptyList()
+        }
+
+        val pValues =
+            results.map { it.pValue }
+
+        val adjustedPValues =
+            StatisticalTest.holmCorrection(pValues)
+
+        return results.mapIndexed { index, result ->
+
+            result.copy(
+                adjustedPValue =
+                    adjustedPValues[index]
             )
         }
     }

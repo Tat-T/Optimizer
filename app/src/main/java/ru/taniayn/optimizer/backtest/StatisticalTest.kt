@@ -227,6 +227,43 @@ object StatisticalTest {
         return pValue.coerceIn(0.0, 1.0)
     }
 
+    fun holmCorrection(
+        pValues: List<Double>
+    ): List<Double> {
+
+        if (pValues.isEmpty()) {
+            return emptyList()
+        }
+
+        val count = pValues.size
+
+        val sortedIndices =
+            pValues.indices.sortedBy { pValues[it] }
+
+        val adjusted =
+            DoubleArray(count)
+
+        var previous = 0.0
+
+        sortedIndices.forEachIndexed { index, originalIndex ->
+
+            val corrected =
+                ((count - index) *
+                        pValues[originalIndex])
+                    .coerceAtMost(1.0)
+
+            val finalValue =
+                maxOf(previous, corrected)
+
+            adjusted[originalIndex] =
+                finalValue
+
+            previous = finalValue
+        }
+
+        return adjusted.toList()
+    }
+
     private fun twoSidedPValue(
         z: Double
     ): Double {

@@ -71,14 +71,16 @@ class MainActivity : ComponentActivity() {
                         StatisticsCalculator.calculateAdditionalNumberFrequency(draws)
 
                     optimizationResults =
-                        WindowOptimizer.testAllHotWindows(
-                            draws = draws,
-                            trainSize = 385
-                        ) +
-                                WindowOptimizer.testAllColdWindows(
-                                    draws = draws,
-                                    trainSize = 385
-                                )
+                        WindowOptimizer.applyHolmCorrection(
+                            WindowOptimizer.testAllHotWindows(
+                                draws = draws,
+                                trainSize = 385
+                            ) +
+                                    WindowOptimizer.testAllColdWindows(
+                                        draws = draws,
+                                        trainSize = 385
+                                    )
+                        )
 
                     backtestResults = listOf(
 
