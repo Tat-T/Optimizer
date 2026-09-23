@@ -36,6 +36,8 @@ import ru.taniayn.optimizer.backtest.Backtester
 import ru.taniayn.optimizer.backtest.Strategies
 import ru.taniayn.optimizer.backtest.StatisticalTest
 import ru.taniayn.optimizer.backtest.WindowOptimizer
+import ru.taniayn.optimizer.ui.BacktestTable
+import ru.taniayn.optimizer.ui.OptimizationTable
 
 class MainActivity : ComponentActivity() {
 
@@ -206,6 +208,7 @@ class MainActivity : ComponentActivity() {
                 additionalNumberFrequency = additionalNumberFrequency,
                 showAnalysis = showAnalysis,
                 backtestResults = backtestResults,
+                optimizationResults = optimizationResults,
                 onShowAnalysis = {
                     showAnalysis = true
                 },
@@ -232,6 +235,7 @@ fun OptimizerApp(
     numberFrequency: Map<Int, Int>,
     additionalNumberFrequency: Map<Int, Int>,
     backtestResults: List<BacktestResult>,
+    optimizationResults: List<BacktestResult>,
     showAnalysis: Boolean,
     onShowAnalysis: () -> Unit,
     onBack: () -> Unit,
@@ -333,6 +337,30 @@ fun OptimizerApp(
                 Text(
                     text = "Случайных комбинаций RANDOM: 7720",
                     fontSize = 14.sp
+                )
+            }
+
+            if (optimizationResults.isNotEmpty()) {
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Text(
+                    text = "⚙️ ОПТИМИЗАЦИЯ",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "Проверка размеров исторического окна",
+                    fontSize = 16.sp
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OptimizationTable(
+                    results = optimizationResults
                 )
             }
 
