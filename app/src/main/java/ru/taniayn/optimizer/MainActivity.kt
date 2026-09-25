@@ -337,7 +337,7 @@ fun OptimizerApp(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "Случайных комбинаций RANDOM: 7720",
+                    text = "Случайных комбинаций RANDOM: ${backtestResults.firstOrNull { it.strategyName == "RANDOM" }?.testedDraws ?: 0}",
                     fontSize = 14.sp
                 )
             }
