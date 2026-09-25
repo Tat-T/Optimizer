@@ -3,6 +3,7 @@ package ru.taniayn.optimizer.ui
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Text
@@ -21,12 +22,27 @@ fun OptimizationTable(results: List<BacktestResult>) {
 
     Column {
 
+        // =========================
+        // HOT
+        // =========================
+
+        Text(
+            text = "🔥 HOT",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(
+                top = 12.dp,
+                bottom = 6.dp
+            )
+        )
+
         // Заголовок таблицы
         Row(
             modifier = Modifier
                 .horizontalScroll(rememberScrollState())
                 .padding(vertical = 8.dp)
-        ) {
+        )
+        {
             Text(
                 text = "Стратегия",
                 fontWeight = FontWeight.Bold,
@@ -76,23 +92,13 @@ fun OptimizationTable(results: List<BacktestResult>) {
             )
         }
 
-        // =========================
-        // HOT
-        // =========================
-
-        Text(
-            text = "🔥 HOT",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(
-                top = 12.dp,
-                bottom = 6.dp
-            )
-        )
-
         results
             .filter { it.strategyName.startsWith("HOT") }
             .forEach { result ->
+
+                Spacer(modifier = Modifier.padding(vertical = 2.dp))
+
+                HorizontalDivider()
 
                 val percent4 =
                     result.matches4OrMore.toDouble() /
@@ -173,9 +179,69 @@ fun OptimizationTable(results: List<BacktestResult>) {
             )
         )
 
+        // Заголовок таблицы
+        Row(
+            modifier = Modifier
+                .horizontalScroll(rememberScrollState())
+                .padding(vertical = 8.dp)
+        )
+        {
+            Text(
+                text = "Стратегия",
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(8.dp)
+            )
+
+            Text(
+                text = "Среднее",
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(8.dp)
+            )
+
+            Text(
+                text = "Δ",
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(8.dp)
+            )
+
+            Text(
+                text = "4+",
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(8.dp)
+            )
+
+            Text(
+                text = "5+",
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(8.dp)
+            )
+
+            Text(
+                text = "Z",
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(8.dp)
+            )
+
+            Text(
+                text = "p",
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(8.dp)
+            )
+
+            Text(
+                text = "p adj.",
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(8.dp)
+            )
+        }
+
         results
             .filter { it.strategyName.startsWith("COLD") }
             .forEach { result ->
+
+                Spacer(modifier = Modifier.padding(vertical = 2.dp))
+
+                HorizontalDivider()
 
                 val percent4 =
                     result.matches4OrMore.toDouble() /
