@@ -12,6 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ru.taniayn.optimizer.backtest.BacktestResult
+import androidx.compose.material3.HorizontalDivider
 
 @Composable
 fun OptimizationTable(results: List<BacktestResult>) {

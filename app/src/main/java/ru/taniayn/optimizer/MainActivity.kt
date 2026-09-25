@@ -355,7 +355,7 @@ fun OptimizerApp(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "Проверка размеров исторического окна",
+                    text = "Проверяем размеры исторического окна: 20–200 тиражей",
                     fontSize = 16.sp
                 )
 
