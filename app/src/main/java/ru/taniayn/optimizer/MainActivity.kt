@@ -38,6 +38,7 @@ import ru.taniayn.optimizer.backtest.StatisticalTest
 import ru.taniayn.optimizer.backtest.WindowOptimizer
 import ru.taniayn.optimizer.ui.BacktestTable
 import ru.taniayn.optimizer.ui.OptimizationTable
+import androidx.compose.material3.HorizontalDivider
 
 class MainActivity : ComponentActivity() {
 
@@ -320,6 +321,10 @@ fun OptimizerApp(
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
+                Text(
+                    text = "Проверка стратегий на следующих тиражах",
+                    fontSize = 16.sp
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -342,6 +347,10 @@ fun OptimizerApp(
                 )
             }
 
+//            HorizontalDivider(
+//                modifier = Modifier.padding(vertical = 6.dp)
+//            )
+
             if (optimizationResults.isNotEmpty()) {
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -357,6 +366,17 @@ fun OptimizerApp(
                 Text(
                     text = "Проверяем размеры исторического окна: 20–200 тиражей",
                     fontSize = 16.sp
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = "🔥 HOT — чаще выпадавшие числа",
+                    fontSize = 14.sp
+                )
+                Text(
+                    text = "❄️ COLD — реже выпадавшие",
+                    fontSize = 14.sp
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
