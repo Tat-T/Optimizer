@@ -70,6 +70,22 @@ fun InfoScreen(
             fontWeight = FontWeight.Bold
         )
 
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = "Как читать результаты",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+            text = "Среднее — среднее количество совпавших чисел " +
+                    "за проверенные тиражи.",
+            fontSize = 16.sp
+        )
+
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(

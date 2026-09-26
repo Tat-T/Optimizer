@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -29,21 +27,20 @@ import ru.taniayn.optimizer.data.CsvParser
 import ru.taniayn.optimizer.statistics.StatisticsCalculator
 import ru.taniayn.optimizer.ui.BacktestTable
 import ru.taniayn.optimizer.ui.FrequencyChart
-import androidx.compose.runtime.mutableStateOf
 import ru.taniayn.optimizer.ui.AnalysisScreen
 import ru.taniayn.optimizer.backtest.BacktestResult
 import ru.taniayn.optimizer.backtest.Backtester
 import ru.taniayn.optimizer.backtest.Strategies
 import ru.taniayn.optimizer.backtest.StatisticalTest
 import ru.taniayn.optimizer.backtest.WindowOptimizer
-import ru.taniayn.optimizer.ui.BacktestTable
+import ru.taniayn.optimizer.ui.InfoScreen
 import ru.taniayn.optimizer.ui.OptimizationTable
-import androidx.compose.material3.HorizontalDivider
 
 class MainActivity : ComponentActivity() {
 
     private var drawCount by mutableIntStateOf(0)
     private var showAnalysis by mutableStateOf(false)
+    private var showInfo by mutableStateOf(false)
     private var numberFrequency by mutableStateOf<Map<Int, Int>>(emptyMap())
     private var additionalNumberFrequency by mutableStateOf<Map<Int, Int>>(emptyMap())
     private var backtestResults by mutableStateOf<List<BacktestResult>>(emptyList())
@@ -210,14 +207,17 @@ class MainActivity : ComponentActivity() {
                 numberFrequency = numberFrequency,
                 additionalNumberFrequency = additionalNumberFrequency,
                 showAnalysis = showAnalysis,
+                showInfo = showInfo,
                 backtestResults = backtestResults,
                 optimizationResults = optimizationResults,
                 onShowAnalysis = {
                     showAnalysis = true
                 },
+                onShowInfo = { showInfo = true },
                 onBack = {
                     showAnalysis = false
                 },
+                onInfoBack = { showInfo = false },
                 onPickCsv = {
                     csvFilePicker.launch(
                         arrayOf(
@@ -240,11 +240,19 @@ fun OptimizerApp(
     backtestResults: List<BacktestResult>,
     optimizationResults: List<BacktestResult>,
     showAnalysis: Boolean,
+    showInfo: Boolean,
     onShowAnalysis: () -> Unit,
     onBack: () -> Unit,
-    onPickCsv: () -> Unit
+    onPickCsv: () -> Unit,
+    onShowInfo: () -> Unit,
+    onInfoBack: () -> Unit
 ) {
-    if (showAnalysis) {
+    if (showInfo) {
+        InfoScreen(
+            onBack = onInfoBack
+        )
+        return
+    } else if (showAnalysis) {
         AnalysisScreen(
             drawCount = drawCount,
             numberFrequency = numberFrequency,
@@ -252,6 +260,8 @@ fun OptimizerApp(
             onBack = onBack
         )
         return
+    } else {
+        // основной экран
     }
     androidx.compose.foundation.lazy.LazyColumn(
         modifier = Modifier
@@ -309,6 +319,17 @@ fun OptimizerApp(
                 Text(
                     text = "📊  АНАЛИЗ",
                     fontSize = 17.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Button(
+                onClick = onShowInfo
+            ) {
+                Text(
+                    text = "ℹ️ ИНФОРМАЦИЯ",
+                    fontSize = 16.sp
                 )
             }
 
