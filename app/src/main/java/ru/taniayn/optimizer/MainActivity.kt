@@ -35,6 +35,9 @@ import ru.taniayn.optimizer.backtest.StatisticalTest
 import ru.taniayn.optimizer.backtest.WindowOptimizer
 import ru.taniayn.optimizer.ui.InfoScreen
 import ru.taniayn.optimizer.ui.OptimizationTable
+import ru.taniayn.optimizer.backtest.CombinationGenerator
+import ru.taniayn.optimizer.backtest.CombinationScore
+import ru.taniayn.optimizer.backtest.DiversifiedSelector
 
 class MainActivity : ComponentActivity() {
 
@@ -45,6 +48,8 @@ class MainActivity : ComponentActivity() {
     private var additionalNumberFrequency by mutableStateOf<Map<Int, Int>>(emptyMap())
     private var backtestResults by mutableStateOf<List<BacktestResult>>(emptyList())
     private var optimizationResults by mutableStateOf<List<BacktestResult>>(emptyList())
+    private var recommendedCombinations by mutableStateOf<List<CombinationScore>>(emptyList())
+    private var showRecommendations by mutableStateOf(false)
 
     private val csvFilePicker =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -210,6 +215,14 @@ class MainActivity : ComponentActivity() {
                 showInfo = showInfo,
                 backtestResults = backtestResults,
                 optimizationResults = optimizationResults,
+                recommendedCombinations = recommendedCombinations,
+                showRecommendations = showRecommendations,
+                onShowRecommendations = {
+                    showRecommendations = true
+                },
+                onRecommendationsBack = {
+                    showRecommendations = false
+                },
                 onShowAnalysis = {
                     showAnalysis = true
                 },
@@ -245,7 +258,11 @@ fun OptimizerApp(
     onBack: () -> Unit,
     onPickCsv: () -> Unit,
     onShowInfo: () -> Unit,
-    onInfoBack: () -> Unit
+    onInfoBack: () -> Unit,
+    recommendedCombinations: List<CombinationScore>,
+    showRecommendations: Boolean,
+    onShowRecommendations: () -> Unit,
+    onRecommendationsBack: () -> Unit,
 ) {
     if (showInfo) {
         InfoScreen(
