@@ -38,8 +38,11 @@ import ru.taniayn.optimizer.ui.OptimizationTable
 import ru.taniayn.optimizer.backtest.CombinationGenerator
 import ru.taniayn.optimizer.backtest.CombinationScore
 import ru.taniayn.optimizer.backtest.DiversifiedSelector
+import ru.taniayn.optimizer.backtest.GeneratorBacktestResult
 import ru.taniayn.optimizer.model.RapidoDraw
 import ru.taniayn.optimizer.ui.RecommendationsScreen
+import ru.taniayn.optimizer.backtest.GeneratorBacktester
+import ru.taniayn.optimizer.ui.GeneratorBacktestScreen
 
 class MainActivity : ComponentActivity() {
 
@@ -51,6 +54,10 @@ class MainActivity : ComponentActivity() {
     private var additionalNumberFrequency by mutableStateOf<Map<Int, Int>>(emptyMap())
     private var backtestResults by mutableStateOf<List<BacktestResult>>(emptyList())
     private var optimizationResults by mutableStateOf<List<BacktestResult>>(emptyList())
+    private var generatorBacktestResult by
+    mutableStateOf<GeneratorBacktestResult?>(null)
+
+    private var showGeneratorBacktest by mutableStateOf(false)
     private var recommendedCombinations by mutableStateOf<List<CombinationScore>>(emptyList())
     private var showRecommendations by mutableStateOf(false)
 
@@ -232,6 +239,11 @@ class MainActivity : ComponentActivity() {
                 optimizationResults = optimizationResults,
                 recommendedCombinations = recommendedCombinations,
                 showRecommendations = showRecommendations,
+                generatorBacktestResult = generatorBacktestResult,
+                showGeneratorBacktest = showGeneratorBacktest,
+                onGeneratorBacktestBack = {
+                    showGeneratorBacktest = false
+                },
 
                 onShowRecommendations = {
 
@@ -253,8 +265,16 @@ class MainActivity : ComponentActivity() {
                                 count = 5,
                                 minDifference = 3
                             )
+                        generatorBacktestResult =
+                            GeneratorBacktester.run(
+                                draws = draws,
+                                trainSize = 385,
+                                window = 200,
+                                recommendationsCount = 5,
+                                candidatesCount = 300
+                            )
                     }
-
+                    showGeneratorBacktest = true
                     showRecommendations = true
                 },
                 onRecommendationsBack = {
@@ -300,6 +320,9 @@ fun OptimizerApp(
     showRecommendations: Boolean,
     onShowRecommendations: () -> Unit,
     onRecommendationsBack: () -> Unit,
+    generatorBacktestResult: GeneratorBacktestResult?,
+    showGeneratorBacktest: Boolean,
+    onGeneratorBacktestBack: () -> Unit,
 ) {
     if (showInfo) {
         InfoScreen(
@@ -321,7 +344,16 @@ fun OptimizerApp(
             )
             return
 
-    } else {
+    } else if (showGeneratorBacktest) {
+
+    GeneratorBacktestScreen(
+        result = generatorBacktestResult,
+        onBack = onGeneratorBacktestBack
+    )
+
+    return
+}
+    else {
         // основной экран
     }
     androidx.compose.foundation.lazy.LazyColumn(
