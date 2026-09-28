@@ -1,6 +1,7 @@
 package ru.taniayn.optimizer.backtest
 
 import ru.taniayn.optimizer.model.RapidoDraw
+import kotlin.math.abs
 
 data class CombinationScore(
     val combination: List<Int>,
@@ -19,24 +20,22 @@ object CombinationScorer {
         window: Int
     ): CombinationScore {
 
-        if (combination.size != 8 || history.isEmpty()) {
-            return CombinationScore(
-                combination = combination,
-                score = 0.0,
-                frequencyScore = 0.0,
-                balanceScore = 0.0,
-                parityScore = 0.0,
-                sumScore = 0.0
-            )
+        if (
+            combination.size != 8 ||
+            combination.toSet().size != 8 ||
+            history.isEmpty()
+        ) {
+            return emptyScore(combination)
         }
 
-        val actualWindow = minOf(window, history.size)
+        val actualWindow =
+            minOf(window, history.size)
 
         val recentHistory =
             history.takeLast(actualWindow)
 
         // -------------------------------------------------
-        // 1. Частота чисел
+        // 1. Частотная модель
         // -------------------------------------------------
 
         val frequency =
@@ -54,41 +53,45 @@ object CombinationScorer {
         }
 
         val maxFrequency =
-            frequency.values.maxOrNull()?.toDouble() ?: 1.0
-
-        val averageFrequency =
-            frequency.values.average()
+            frequency.values
+                .maxOrNull()
+                ?.toDouble()
+                ?: 1.0
 
         val selectedFrequency =
-            combination.sumOf {
-                frequency[it] ?: 0
-            }.toDouble() / combination.size
+            combination
+                .sumOf { frequency[it] ?: 0 }
+                .toDouble() / combination.size
 
         /*
-         * Насколько средняя частота выбранных чисел
-         * отличается от средней частоты всех чисел.
+         * Средняя частота выбранных чисел
+         * относительно самого часто выпадавшего числа.
          *
-         * Значение около 1.0 — близко к историческому
-         * среднему.
+         * Это показывает, насколько выбранные числа
+         * соответствуют исторической частотной модели.
          */
 
         val frequencyScore =
-            if (averageFrequency > 0.0) {
-                (
-                        selectedFrequency /
-                                averageFrequency
-                        ).coerceIn(0.0, 2.0) / 2.0
+            if (maxFrequency > 0.0) {
+                (selectedFrequency / maxFrequency)
+                    .coerceIn(0.0, 1.0)
             } else {
-                0.5
+                0.0
             }
 
         // -------------------------------------------------
-        // 2. Баланс HOT / COLD
+        // 2. Историческая HOT / COLD модель
         // -------------------------------------------------
 
         val sortedByFrequency =
             frequency.entries
-                .sortedByDescending { it.value }
+                .sortedWith(
+                    compareByDescending<Map.Entry<Int, Int>> {
+                        it.value
+                    }.thenBy {
+                        it.key
+                    }
+                )
 
         val hotNumbers =
             sortedByFrequency
@@ -102,83 +105,86 @@ object CombinationScorer {
                 .map { it.key }
                 .toSet()
 
-        val hotCount =
-            combination.count { it in hotNumbers }
-
-        val coldCount =
-            combination.count { it in coldNumbers }
-
         /*
-         * Для первой версии считаем хорошим умеренный
-         * баланс между HOT и COLD.
+         * Для каждого исторического тиража считаем,
+         * сколько HOT-чисел в нём оказалось.
          *
-         * 4 HOT + 4 COLD получает максимальную оценку.
+         * Затем смотрим, насколько количество HOT
+         * в нашей комбинации соответствует реальной истории.
          */
+
+        val historicalHotCounts =
+            recentHistory.map { draw ->
+                draw.numbers.count {
+                    it in hotNumbers
+                }
+            }
+
+        val candidateHotCount =
+            combination.count {
+                it in hotNumbers
+            }
 
         val balanceScore =
-            1.0 -
-                    kotlin.math.abs(
-                        hotCount - coldCount
-                    ) / 8.0
-
-        // -------------------------------------------------
-        // 3. Баланс чётных / нечётных
-        // -------------------------------------------------
-
-        val evenCount =
-            combination.count { it % 2 == 0 }
-
-        val oddCount =
-            combination.size - evenCount
-
-        /*
-         * Для 8 чисел идеальный центр:
-         * 4 чётных + 4 нечётных.
-         */
-
-        val parityScore =
-            1.0 -
-                    kotlin.math.abs(
-                        evenCount - oddCount
-                    ) / 8.0
-
-        // -------------------------------------------------
-        // 4. Сумма комбинации
-        // -------------------------------------------------
-
-        val combinationSum =
-            combination.sum()
-
-        /*
-         * Для 8 чисел из диапазона 1..20
-         * ожидаемая центральная сумма:
-         *
-         * 8 × 10.5 = 84
-         */
-
-        val expectedSum = 84.0
-
-        val sumDifference =
-            kotlin.math.abs(
-                combinationSum - expectedSum
+            empiricalProbabilityScore(
+                value = candidateHotCount,
+                historicalValues = historicalHotCounts,
+                minValue = 0,
+                maxValue = 8
             )
 
-        /*
-         * Чем ближе сумма к центральной,
-         * тем выше оценка.
-         *
-         * 84 -> 1.0
-         * сильное отклонение -> ниже.
-         */
+        // -------------------------------------------------
+        // 3. Историческая модель чётных / нечётных
+        // -------------------------------------------------
 
-        val sumScore =
-            (
-                    1.0 -
-                            sumDifference / expectedSum
-                    ).coerceIn(0.0, 1.0)
+        val historicalEvenCounts =
+            recentHistory.map { draw ->
+                draw.numbers.count {
+                    it % 2 == 0
+                }
+            }
+
+        val candidateEvenCount =
+            combination.count {
+                it % 2 == 0
+            }
+
+        val parityScore =
+            empiricalProbabilityScore(
+                value = candidateEvenCount,
+                historicalValues = historicalEvenCounts,
+                minValue = 0,
+                maxValue = 8
+            )
 
         // -------------------------------------------------
-        // Итоговый Score
+        // 4. Историческая модель суммы
+        // -------------------------------------------------
+
+        val historicalSums =
+            recentHistory.map { draw ->
+                draw.numbers.sum()
+            }
+
+        val candidateSum =
+            combination.sum()
+
+        val minSum =
+            historicalSums.minOrNull() ?: 0
+
+        val maxSum =
+            historicalSums.maxOrNull() ?: 0
+
+        val sumScore =
+            empiricalProbabilityScore(
+                value = candidateSum,
+                historicalValues = historicalSums,
+                minValue = minSum,
+                maxValue = maxSum
+            )
+
+        // -------------------------------------------------
+        // 5. Итоговая оценка
         // -------------------------------------------------
 
         val score =
@@ -194,6 +200,73 @@ object CombinationScorer {
             balanceScore = balanceScore,
             parityScore = parityScore,
             sumScore = sumScore
+        )
+    }
+
+    /**
+     * Оценивает, насколько значение соответствует
+     * распределению, реально наблюдавшемуся в истории.
+     *
+     * Используется сглаживание +1, чтобы значение,
+     * которое ещё не встречалось, не получало абсолютный ноль.
+     */
+    private fun empiricalProbabilityScore(
+        value: Int,
+        historicalValues: List<Int>,
+        minValue: Int,
+        maxValue: Int
+    ): Double {
+
+        if (historicalValues.isEmpty()) {
+            return 0.0
+        }
+
+        if (value < minValue || value > maxValue) {
+            return 0.0
+        }
+
+        val possibleValues =
+            (minValue..maxValue).toList()
+
+        val counts =
+            possibleValues.associateWith { candidate ->
+                historicalValues.count {
+                    it == candidate
+                }
+            }
+
+        val smoothedCounts =
+            counts.mapValues {
+                it.value + 1
+            }
+
+        val maxCount =
+            smoothedCounts.values
+                .maxOrNull()
+                ?.toDouble()
+                ?: 1.0
+
+        val candidateCount =
+            smoothedCounts[value]
+                ?.toDouble()
+                ?: 1.0
+
+        return (
+                candidateCount / maxCount
+                ).coerceIn(0.0, 1.0)
+    }
+
+    private fun emptyScore(
+        combination: List<Int>
+    ): CombinationScore {
+
+        return CombinationScore(
+            combination = combination.sorted(),
+            score = 0.0,
+            frequencyScore = 0.0,
+            balanceScore = 0.0,
+            parityScore = 0.0,
+            sumScore = 0.0
         )
     }
 }

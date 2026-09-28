@@ -38,10 +38,13 @@ import ru.taniayn.optimizer.ui.OptimizationTable
 import ru.taniayn.optimizer.backtest.CombinationGenerator
 import ru.taniayn.optimizer.backtest.CombinationScore
 import ru.taniayn.optimizer.backtest.DiversifiedSelector
+import ru.taniayn.optimizer.model.RapidoDraw
+import ru.taniayn.optimizer.ui.RecommendationsScreen
 
 class MainActivity : ComponentActivity() {
 
     private var drawCount by mutableIntStateOf(0)
+    private var draws by mutableStateOf<List<RapidoDraw>>(emptyList())
     private var showAnalysis by mutableStateOf(false)
     private var showInfo by mutableStateOf(false)
     private var numberFrequency by mutableStateOf<Map<Int, Int>>(emptyMap())
@@ -63,9 +66,21 @@ class MainActivity : ComponentActivity() {
                         ?.use { it.readText() }
                         ?: return@registerForActivityResult
 
-                    val draws = CsvParser.parse(csvText)
+                    val parsedDraws = CsvParser.parse(csvText)
 
-                    drawCount = draws.size
+                    draws = parsedDraws
+
+                    drawCount = parsedDraws.size
+
+                    numberFrequency =
+                        StatisticsCalculator.calculateMainNumberFrequency(
+                            parsedDraws
+                        )
+
+                    additionalNumberFrequency =
+                        StatisticsCalculator.calculateAdditionalNumberFrequency(
+                            parsedDraws
+                        )
 
                     numberFrequency =
                         StatisticsCalculator.calculateMainNumberFrequency(draws)
@@ -217,7 +232,29 @@ class MainActivity : ComponentActivity() {
                 optimizationResults = optimizationResults,
                 recommendedCombinations = recommendedCombinations,
                 showRecommendations = showRecommendations,
+
                 onShowRecommendations = {
+
+                    if (draws.size > 385) {
+
+                        val trainHistory =
+                            draws.take(385)
+
+                        val candidates =
+                            CombinationGenerator.generateCandidates(
+                                history = trainHistory,
+                                window = 200,
+                                count = 1000
+                            )
+
+                        recommendedCombinations =
+                            DiversifiedSelector.select(
+                                candidates = candidates,
+                                count = 5,
+                                minDifference = 3
+                            )
+                    }
+
                     showRecommendations = true
                 },
                 onRecommendationsBack = {
@@ -277,6 +314,13 @@ fun OptimizerApp(
             onBack = onBack
         )
         return
+    } else if (showRecommendations) {
+            RecommendationsScreen(
+                combinations = recommendedCombinations,
+                onBack = onRecommendationsBack
+            )
+            return
+
     } else {
         // основной экран
     }
@@ -429,6 +473,16 @@ fun OptimizerApp(
                 OptimizationTable(
                     results = optimizationResults
                 )
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Button(
+                    onClick = onShowRecommendations
+                ) {
+                    Text(
+                        text = "🎯 РЕКОМЕНДУЕМЫЕ КОМБИНАЦИИ",
+                        fontSize = 16.sp
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
