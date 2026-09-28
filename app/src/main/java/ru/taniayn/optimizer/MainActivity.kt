@@ -343,8 +343,15 @@ fun OptimizerApp(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Проверка стратегий на следующих тиражах",
+                    text = "Проверяем стратегии на тиражах, " +
+                            "которые не использовались для их выбора.",
                     fontSize = 16.sp
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = "Обучение: 385 тиражей → Проверка: 386 тиражей",
+                    fontSize = 14.sp
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
