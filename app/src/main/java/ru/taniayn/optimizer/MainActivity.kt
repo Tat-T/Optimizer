@@ -43,6 +43,7 @@ import ru.taniayn.optimizer.model.RapidoDraw
 import ru.taniayn.optimizer.ui.RecommendationsScreen
 import ru.taniayn.optimizer.backtest.GeneratorBacktester
 import ru.taniayn.optimizer.ui.GeneratorBacktestScreen
+import ru.taniayn.optimizer.ui.GeneratorProgressScreen
 
 class MainActivity : ComponentActivity() {
 
@@ -58,6 +59,7 @@ class MainActivity : ComponentActivity() {
     mutableStateOf<GeneratorBacktestResult?>(null)
 
     private var showGeneratorBacktest by mutableStateOf(false)
+    private var isGeneratorBacktestRunning by mutableStateOf(false)
     private var recommendedCombinations by mutableStateOf<List<CombinationScore>>(emptyList())
     private var showRecommendations by mutableStateOf(false)
 
@@ -89,11 +91,11 @@ class MainActivity : ComponentActivity() {
                             parsedDraws
                         )
 
-                    numberFrequency =
-                        StatisticsCalculator.calculateMainNumberFrequency(draws)
-
-                    additionalNumberFrequency =
-                        StatisticsCalculator.calculateAdditionalNumberFrequency(draws)
+//                    numberFrequency =
+//                        StatisticsCalculator.calculateMainNumberFrequency(draws)
+//
+//                    additionalNumberFrequency =
+//                        StatisticsCalculator.calculateAdditionalNumberFrequency(draws)
 
                     optimizationResults =
                         WindowOptimizer.applyHolmCorrection(
@@ -241,16 +243,15 @@ class MainActivity : ComponentActivity() {
                 showRecommendations = showRecommendations,
                 generatorBacktestResult = generatorBacktestResult,
                 showGeneratorBacktest = showGeneratorBacktest,
+                isGeneratorBacktestRunning = isGeneratorBacktestRunning,
                 onGeneratorBacktestBack = {
                     showGeneratorBacktest = false
                 },
 
                 onShowRecommendations = {
-
                     if (draws.size > 385) {
 
-                        val trainHistory =
-                            draws.take(385)
+                        val trainHistory = draws.take(385)
 
                         val candidates =
                             CombinationGenerator.generateCandidates(
@@ -259,26 +260,34 @@ class MainActivity : ComponentActivity() {
                                 count = 1000
                             )
 
-                        recommendedCombinations =
+                        val selectedCombinations =
                             DiversifiedSelector.select(
                                 candidates = candidates,
                                 count = 5,
                                 minDifference = 3
                             )
-                        generatorBacktestResult =
-                            GeneratorBacktester.run(
-                                draws = draws,
-                                trainSize = 385,
-                                window = 200,
-                                recommendationsCount = 5,
-                                candidatesCount = 300
-                            )
+
+                        recommendedCombinations = selectedCombinations
                     }
-                    showGeneratorBacktest = true
+
                     showRecommendations = true
                 },
                 onRecommendationsBack = {
                     showRecommendations = false
+                },
+                onGeneratorBacktest = {
+
+                    generatorBacktestResult =
+                        GeneratorBacktester.run(
+                            draws = draws,
+                            trainSize = 385,
+                            window = 200,
+                            recommendationsCount = 5,
+                            candidatesCount = 300
+                        )
+
+                    showRecommendations = false
+                    showGeneratorBacktest = true
                 },
                 onShowAnalysis = {
                     showAnalysis = true
@@ -320,9 +329,12 @@ fun OptimizerApp(
     showRecommendations: Boolean,
     onShowRecommendations: () -> Unit,
     onRecommendationsBack: () -> Unit,
+    onGeneratorBacktest: () -> Unit,
     generatorBacktestResult: GeneratorBacktestResult?,
     showGeneratorBacktest: Boolean,
+    isGeneratorBacktestRunning: Boolean,
     onGeneratorBacktestBack: () -> Unit,
+
 ) {
     if (showInfo) {
         InfoScreen(
@@ -338,12 +350,24 @@ fun OptimizerApp(
         )
         return
     } else if (showRecommendations) {
-            RecommendationsScreen(
-                combinations = recommendedCombinations,
-                onBack = onRecommendationsBack
-            )
-            return
 
+        RecommendationsScreen(
+            combinations = recommendedCombinations,
+            onBack = onRecommendationsBack,
+            onBacktest = onGeneratorBacktest
+        )
+
+        return
+    } else if (isGeneratorBacktestRunning) {
+        GeneratorProgressScreen()
+        return
+    } else if (showGeneratorBacktest) {
+
+        GeneratorBacktestScreen(
+            result = generatorBacktestResult,
+            onBack = onGeneratorBacktestBack
+        )
+        return
     } else if (showGeneratorBacktest) {
 
     GeneratorBacktestScreen(

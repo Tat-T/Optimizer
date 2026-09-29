@@ -5,15 +5,26 @@ import ru.taniayn.optimizer.model.RapidoDraw
 data class GeneratorBacktestResult(
     val testedDraws: Int,
     val testedCombinations: Int,
+
+    // Генератор — среднее по 5 комбинациям
     val averageOverlap: Double,
     val matches4OrMore: Int,
     val matches5OrMore: Int,
+
+    // RANDOM — среднее по 5 комбинациям
     val randomAverageOverlap: Double,
     val randomMatches4OrMore: Int,
     val randomMatches5OrMore: Int,
+
+    // Лучший результат из 5
     val bestRecommendationAverage: Double,
     val bestRecommendation4OrMore: Int,
-    val bestRecommendation5OrMore: Int
+    val bestRecommendation5OrMore: Int,
+
+    // Лучший результат из 5 RANDOM
+    val bestRandomAverage: Double,
+    val bestRandom4OrMore: Int,
+    val bestRandom5OrMore: Int
 )
 
 object GeneratorBacktester {
@@ -30,28 +41,31 @@ object GeneratorBacktester {
             return emptyResult()
         }
 
-        var totalOverlap = 0
-        var matches4OrMore = 0
-        var matches5OrMore = 0
+        var totalGeneratorOverlap = 0
+        var generatorMatches4OrMore = 0
+        var generatorMatches5OrMore = 0
 
-        var randomTotalOverlap = 0
+        var totalRandomOverlap = 0
         var randomMatches4OrMore = 0
         var randomMatches5OrMore = 0
 
-        var bestTotalOverlap = 0
-        var bestMatches4OrMore = 0
-        var bestMatches5OrMore = 0
+        var totalBestGeneratorOverlap = 0
+        var bestGenerator4OrMore = 0
+        var bestGenerator5OrMore = 0
+
+        var totalBestRandomOverlap = 0
+        var bestRandom4OrMore = 0
+        var bestRandom5OrMore = 0
 
         var testedDraws = 0
 
         for (i in trainSize until draws.size) {
 
-            val history =
-                draws.subList(0, i)
+            val history = draws.subList(0, i)
 
-            // ---------------------------------------------
-            // Генерируем рекомендации только из прошлого
-            // ---------------------------------------------
+            // -----------------------------
+            // ГЕНЕРАТОР
+            // -----------------------------
 
             val candidates =
                 CombinationGenerator.generateCandidates(
@@ -71,11 +85,7 @@ object GeneratorBacktester {
             val actualNumbers =
                 draws[i].numbers.toSet()
 
-            // ---------------------------------------------
-            // Проверяем все рекомендации
-            // ---------------------------------------------
-
-            var bestOverlap = 0
+            var bestGeneratorOverlap = 0
 
             recommendations.forEach { recommendation ->
 
@@ -85,57 +95,80 @@ object GeneratorBacktester {
                         .intersect(actualNumbers)
                         .size
 
-                totalOverlap += overlap
+                totalGeneratorOverlap += overlap
 
                 if (overlap >= 4) {
-                    matches4OrMore++
+                    generatorMatches4OrMore++
                 }
 
                 if (overlap >= 5) {
-                    matches5OrMore++
+                    generatorMatches5OrMore++
                 }
 
-                if (overlap > bestOverlap) {
-                    bestOverlap = overlap
+                if (overlap > bestGeneratorOverlap) {
+                    bestGeneratorOverlap = overlap
                 }
             }
 
-            // ---------------------------------------------
-            // RANDOM
-            // ---------------------------------------------
+            totalBestGeneratorOverlap +=
+                bestGeneratorOverlap
 
-            val randomNumbers =
-                RandomStrategy
-                    .generateForDraw(i)
-                    .toSet()
-
-            val randomOverlap =
-                randomNumbers
-                    .intersect(actualNumbers)
-                    .size
-
-            randomTotalOverlap += randomOverlap
-
-            if (randomOverlap >= 4) {
-                randomMatches4OrMore++
+            if (bestGeneratorOverlap >= 4) {
+                bestGenerator4OrMore++
             }
 
-            if (randomOverlap >= 5) {
-                randomMatches5OrMore++
+            if (bestGeneratorOverlap >= 5) {
+                bestGenerator5OrMore++
             }
 
-            // ---------------------------------------------
-            // Лучший из пяти
-            // ---------------------------------------------
+            // -----------------------------
+            // RANDOM — 5 КОМБИНАЦИЙ
+            // -----------------------------
 
-            bestTotalOverlap += bestOverlap
+            var randomOverlapForDraw = 0
+            var bestRandomOverlap = 0
 
-            if (bestOverlap >= 4) {
-                bestMatches4OrMore++
+            repeat(recommendationsCount) {
+
+                val randomNumbers =
+                    RandomStrategy
+                        .generateForDraw(
+                            i * recommendationsCount + it
+                        )
+                        .toSet()
+
+                val overlap =
+                    randomNumbers
+                        .intersect(actualNumbers)
+                        .size
+
+                randomOverlapForDraw += overlap
+
+                if (overlap > bestRandomOverlap) {
+                    bestRandomOverlap = overlap
+                }
+
+                if (overlap >= 4) {
+                    randomMatches4OrMore++
+                }
+
+                if (overlap >= 5) {
+                    randomMatches5OrMore++
+                }
             }
 
-            if (bestOverlap >= 5) {
-                bestMatches5OrMore++
+            totalRandomOverlap +=
+                randomOverlapForDraw
+
+            totalBestRandomOverlap +=
+                bestRandomOverlap
+
+            if (bestRandomOverlap >= 4) {
+                bestRandom4OrMore++
+            }
+
+            if (bestRandomOverlap >= 5) {
+                bestRandom5OrMore++
             }
 
             testedDraws++
@@ -146,23 +179,31 @@ object GeneratorBacktester {
 
         val averageOverlap =
             if (testedCombinations > 0) {
-                totalOverlap.toDouble() /
+                totalGeneratorOverlap.toDouble() /
                         testedCombinations
             } else {
                 0.0
             }
 
         val randomAverageOverlap =
-            if (testedDraws > 0) {
-                randomTotalOverlap.toDouble() /
-                        testedDraws
+            if (testedCombinations > 0) {
+                totalRandomOverlap.toDouble() /
+                        testedCombinations
             } else {
                 0.0
             }
 
         val bestRecommendationAverage =
             if (testedDraws > 0) {
-                bestTotalOverlap.toDouble() /
+                totalBestGeneratorOverlap.toDouble() /
+                        testedDraws
+            } else {
+                0.0
+            }
+
+        val bestRandomAverage =
+            if (testedDraws > 0) {
+                totalBestRandomOverlap.toDouble() /
                         testedDraws
             } else {
                 0.0
@@ -173,8 +214,8 @@ object GeneratorBacktester {
             testedCombinations = testedCombinations,
 
             averageOverlap = averageOverlap,
-            matches4OrMore = matches4OrMore,
-            matches5OrMore = matches5OrMore,
+            matches4OrMore = generatorMatches4OrMore,
+            matches5OrMore = generatorMatches5OrMore,
 
             randomAverageOverlap = randomAverageOverlap,
             randomMatches4OrMore = randomMatches4OrMore,
@@ -184,16 +225,24 @@ object GeneratorBacktester {
                 bestRecommendationAverage,
 
             bestRecommendation4OrMore =
-                bestMatches4OrMore,
+                bestGenerator4OrMore,
 
             bestRecommendation5OrMore =
-                bestMatches5OrMore
+                bestGenerator5OrMore,
+
+            bestRandomAverage =
+                bestRandomAverage,
+
+            bestRandom4OrMore =
+                bestRandom4OrMore,
+
+            bestRandom5OrMore =
+                bestRandom5OrMore
         )
     }
 
-    private fun emptyResult(): GeneratorBacktestResult {
-
-        return GeneratorBacktestResult(
+    private fun emptyResult(): GeneratorBacktestResult =
+        GeneratorBacktestResult(
             testedDraws = 0,
             testedCombinations = 0,
 
@@ -207,7 +256,10 @@ object GeneratorBacktester {
 
             bestRecommendationAverage = 0.0,
             bestRecommendation4OrMore = 0,
-            bestRecommendation5OrMore = 0
+            bestRecommendation5OrMore = 0,
+
+            bestRandomAverage = 0.0,
+            bestRandom4OrMore = 0,
+            bestRandom5OrMore = 0
         )
-    }
 }

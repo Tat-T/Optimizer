@@ -23,7 +23,8 @@ import ru.taniayn.optimizer.backtest.CombinationScore
 @Composable
 fun RecommendationsScreen(
     combinations: List<CombinationScore>,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onBacktest: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -153,7 +154,18 @@ fun RecommendationsScreen(
         Spacer(
             modifier = Modifier.height(24.dp)
         )
+        Button(
+            onClick = onBacktest
+        ) {
+            Text(
+                text = "🧪 ПРОВЕРИТЬ ГЕНЕРАТОР",
+                fontSize = 16.sp
+            )
+        }
 
+        Spacer(
+            modifier = Modifier.height(16.dp)
+        )
         Text(
             text = "Важно",
             fontSize = 20.sp,
