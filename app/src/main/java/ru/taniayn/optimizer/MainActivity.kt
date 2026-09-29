@@ -44,6 +44,10 @@ import ru.taniayn.optimizer.ui.RecommendationsScreen
 import ru.taniayn.optimizer.backtest.GeneratorBacktester
 import ru.taniayn.optimizer.ui.GeneratorBacktestScreen
 import ru.taniayn.optimizer.ui.GeneratorProgressScreen
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
 
@@ -277,17 +281,28 @@ class MainActivity : ComponentActivity() {
                 },
                 onGeneratorBacktest = {
 
-                    generatorBacktestResult =
-                        GeneratorBacktester.run(
-                            draws = draws,
-                            trainSize = 385,
-                            window = 200,
-                            recommendationsCount = 5,
-                            candidatesCount = 300
-                        )
-
+                    isGeneratorBacktestRunning = true
                     showRecommendations = false
-                    showGeneratorBacktest = true
+                    showGeneratorBacktest = false
+
+                    lifecycleScope.launch {
+
+                        val result = withContext(Dispatchers.Default) {
+
+                            GeneratorBacktester.run(
+                                draws = draws,
+                                trainSize = 385,
+                                window = 200,
+                                recommendationsCount = 5,
+                                candidatesCount = 300
+                            )
+                        }
+
+                        generatorBacktestResult = result
+
+                        isGeneratorBacktestRunning = false
+                        showGeneratorBacktest = true
+                    }
                 },
                 onShowAnalysis = {
                     showAnalysis = true
