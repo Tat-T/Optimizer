@@ -6,6 +6,14 @@ data class GeneratorBacktestResult(
     val testedDraws: Int,
     val testedCombinations: Int,
 
+    val bestGeneratorCombination: List<Int>,
+    val bestGeneratorActualDraw: List<Int>,
+    val bestGeneratorOverlap: Int,
+
+    val bestRandomCombination: List<Int>,
+    val bestRandomActualDraw: List<Int>,
+    val bestRandomOverlap: Int,
+
     // Генератор — среднее по 5 комбинациям
     val averageOverlap: Double,
     val matches4OrMore: Int,
@@ -44,6 +52,14 @@ object GeneratorBacktester {
         var totalGeneratorOverlap = 0
         var generatorMatches4OrMore = 0
         var generatorMatches5OrMore = 0
+
+        var overallBestGeneratorOverlap = -1
+        var overallBestGeneratorCombination = emptyList<Int>()
+        var overallBestGeneratorActualDraw = emptyList<Int>()
+
+        var overallBestRandomOverlap = -1
+        var overallBestRandomCombination = emptyList<Int>()
+        var overallBestRandomActualDraw = emptyList<Int>()
 
         var totalRandomOverlap = 0
         var randomMatches4OrMore = 0
@@ -121,6 +137,28 @@ object GeneratorBacktester {
                 bestGenerator5OrMore++
             }
 
+            if (bestGeneratorOverlap > overallBestGeneratorOverlap) {
+
+                overallBestGeneratorOverlap = bestGeneratorOverlap
+
+                val bestRecommendation =
+                    recommendations.firstOrNull { recommendation ->
+
+                        recommendation.combination
+                            .toSet()
+                            .intersect(actualNumbers)
+                            .size == bestGeneratorOverlap
+                    }
+
+                if (bestRecommendation != null) {
+
+                    overallBestGeneratorCombination =
+                        bestRecommendation.combination
+
+                    overallBestGeneratorActualDraw =
+                        draws[i].numbers.toList()
+                }
+            }
             // -----------------------------
             // RANDOM — 5 КОМБИНАЦИЙ
             // -----------------------------
@@ -145,7 +183,14 @@ object GeneratorBacktester {
                 randomOverlapForDraw += overlap
 
                 if (overlap > bestRandomOverlap) {
+
                     bestRandomOverlap = overlap
+
+                    if (overlap > overallBestRandomOverlap) {
+                        overallBestRandomOverlap = overlap
+                        overallBestRandomCombination = randomNumbers.toList().sorted()
+                        overallBestRandomActualDraw = draws[i].numbers.toList()
+                    }
                 }
 
                 if (overlap >= 4) {
@@ -212,6 +257,23 @@ object GeneratorBacktester {
         return GeneratorBacktestResult(
             testedDraws = testedDraws,
             testedCombinations = testedCombinations,
+            bestGeneratorCombination =
+                overallBestGeneratorCombination,
+
+            bestGeneratorActualDraw =
+                overallBestGeneratorActualDraw,
+
+            bestGeneratorOverlap =
+                overallBestGeneratorOverlap,
+
+            bestRandomCombination =
+                overallBestRandomCombination,
+
+            bestRandomActualDraw =
+                overallBestRandomActualDraw,
+
+            bestRandomOverlap =
+                overallBestRandomOverlap,
 
             averageOverlap = averageOverlap,
             matches4OrMore = generatorMatches4OrMore,
@@ -237,7 +299,8 @@ object GeneratorBacktester {
                 bestRandom4OrMore,
 
             bestRandom5OrMore =
-                bestRandom5OrMore
+                bestRandom5OrMore,
+
         )
     }
 
@@ -245,6 +308,14 @@ object GeneratorBacktester {
         GeneratorBacktestResult(
             testedDraws = 0,
             testedCombinations = 0,
+
+            bestGeneratorCombination = emptyList(),
+            bestGeneratorActualDraw = emptyList(),
+            bestGeneratorOverlap = 0,
+
+            bestRandomCombination = emptyList(),
+            bestRandomActualDraw = emptyList(),
+            bestRandomOverlap = 0,
 
             averageOverlap = 0.0,
             matches4OrMore = 0,

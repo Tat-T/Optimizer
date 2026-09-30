@@ -143,7 +143,7 @@ fun GeneratorBacktestScreen(
             )
 
             Text(
-                text = "5+: ${result.randomMatches5OrMore}",
+                text = "5+: ${result.bestRecommendation5OrMore}",
                 fontSize = 17.sp
             )
 
@@ -158,10 +158,36 @@ fun GeneratorBacktestScreen(
             )
 
             Text(
-                text = "🏆 ЛУЧШИЙ ИЗ 5",
+                text = "🏆 ЛУЧШИЙ ИЗ 5 RANDOM",
                 fontSize = 21.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(
+                modifier = Modifier.height(10.dp)
+            )
+
+            Text(
+                text = "Комбинация: " +
+                        result.bestGeneratorCombination.joinToString("  ") {
+                            "%02d".format(it)
+                        },
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = "Попадание: " +
+                        "${result.bestGeneratorOverlap} из 8",
+                fontSize = 17.sp
+            )
+
+            Text(
+                text = "Фактический тираж: " +
+                        result.bestGeneratorActualDraw.joinToString("  ") {
+                            "%02d".format(it)
+                        },
+                fontSize = 17.sp
             )
 
             Spacer(
@@ -170,18 +196,18 @@ fun GeneratorBacktestScreen(
 
             Text(
                 text = "Среднее: %.3f".format(
-                    result.bestRecommendationAverage
+                    result.bestRandomAverage
                 ),
                 fontSize = 17.sp
             )
 
             Text(
-                text = "4+: ${result.bestRecommendation4OrMore}",
+                text = "4+: ${result.bestRandom4OrMore}",
                 fontSize = 17.sp
             )
 
             Text(
-                text = "5+: ${result.bestRecommendation5OrMore}",
+                text = "5+: ${result.bestRandom5OrMore}",
                 fontSize = 17.sp
             )
 
