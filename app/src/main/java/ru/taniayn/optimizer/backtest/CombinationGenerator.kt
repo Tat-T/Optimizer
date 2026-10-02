@@ -33,10 +33,15 @@ object CombinationGenerator {
 
         return combinations
             .map { combination ->
+
+                val additionalNumber =
+                    random.nextInt(1, 5)
+
                 CombinationScorer.score(
                     combination = combination,
                     history = history,
-                    window = window
+                    window = window,
+                    additionalNumber = additionalNumber
                 )
             }
             .sortedByDescending { it.score }

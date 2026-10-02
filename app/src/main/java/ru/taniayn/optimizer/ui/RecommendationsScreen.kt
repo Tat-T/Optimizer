@@ -105,6 +105,17 @@ fun RecommendationsScreen(
                 )
 
                 Text(
+                    text = "➕ Дополнительное число: " +
+                            "%02d".format(result.additionalNumber),
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(
+                    modifier = Modifier.height(8.dp)
+                )
+
+                Text(
                     text = "Score: %.3f".format(result.score),
                     fontSize = 16.sp
                 )
@@ -112,6 +123,12 @@ fun RecommendationsScreen(
                 Text(
                     text = "Частоты: %.3f".format(
                         result.frequencyScore
+                    ),
+                    fontSize = 14.sp
+                )
+                Text(
+                    text = "Доп. число: %.3f".format(
+                        result.additionalScore
                     ),
                     fontSize = 14.sp
                 )

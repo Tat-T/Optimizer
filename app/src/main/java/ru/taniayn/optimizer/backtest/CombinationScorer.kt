@@ -5,11 +5,13 @@ import kotlin.math.abs
 
 data class CombinationScore(
     val combination: List<Int>,
+    val additionalNumber: Int,
     val score: Double,
     val frequencyScore: Double,
     val balanceScore: Double,
     val parityScore: Double,
-    val sumScore: Double
+    val sumScore: Double,
+    val additionalScore: Double
 )
 
 object CombinationScorer {
@@ -17,7 +19,8 @@ object CombinationScorer {
     fun score(
         combination: List<Int>,
         history: List<RapidoDraw>,
-        window: Int
+        window: Int,
+        additionalNumber: Int
     ): CombinationScore {
 
         if (
@@ -25,7 +28,8 @@ object CombinationScorer {
             combination.toSet().size != 8 ||
             history.isEmpty()
         ) {
-            return emptyScore(combination)
+            return emptyScore(combination,
+                additionalNumber)
         }
 
         val actualWindow =
@@ -37,6 +41,8 @@ object CombinationScorer {
         // -------------------------------------------------
         // 1. Частотная модель
         // -------------------------------------------------
+
+
 
         val frequency =
             (1..20)
@@ -75,6 +81,47 @@ object CombinationScorer {
             if (maxFrequency > 0.0) {
                 (selectedFrequency / maxFrequency)
                     .coerceIn(0.0, 1.0)
+            } else {
+                0.0
+            }
+
+        // -------------------------------------------------
+// Дополнительное число
+// -------------------------------------------------
+
+        val additionalFrequency =
+            (1..4)
+                .associateWith { 0 }
+                .toMutableMap()
+
+        recentHistory.forEach { draw ->
+
+            val number = draw.additionalNumber
+
+            if (number in 1..4) {
+                additionalFrequency[number] =
+                    additionalFrequency.getValue(number) + 1
+            }
+        }
+
+        val maxAdditionalFrequency =
+            additionalFrequency.values
+                .maxOrNull()
+                ?.toDouble()
+                ?: 1.0
+
+        val selectedAdditionalFrequency =
+            additionalFrequency[additionalNumber]
+                ?.toDouble()
+                ?: 0.0
+
+        val additionalScore =
+            if (maxAdditionalFrequency > 0) {
+
+                (selectedAdditionalFrequency /
+                        maxAdditionalFrequency)
+                    .coerceIn(0.0, 1.0)
+
             } else {
                 0.0
             }
@@ -188,20 +235,25 @@ object CombinationScorer {
         // -------------------------------------------------
 
         val score =
-            frequencyScore * 0.40 +
+            frequencyScore * 0.35 +
                     balanceScore * 0.25 +
                     parityScore * 0.15 +
-                    sumScore * 0.20
+                    sumScore * 0.15 +
+                    additionalScore * 0.10
 
         return CombinationScore(
             combination = combination.sorted(),
+            additionalNumber = additionalNumber,
             score = score,
             frequencyScore = frequencyScore,
             balanceScore = balanceScore,
             parityScore = parityScore,
-            sumScore = sumScore
+            sumScore = sumScore,
+            additionalScore = additionalScore
         )
     }
+
+
 
     /**
      * Оценивает, насколько значение соответствует
@@ -257,16 +309,19 @@ object CombinationScorer {
     }
 
     private fun emptyScore(
-        combination: List<Int>
+        combination: List<Int>,
+        additionalNumber: Int = 0
     ): CombinationScore {
 
         return CombinationScore(
             combination = combination.sorted(),
+            additionalNumber = additionalNumber,
             score = 0.0,
             frequencyScore = 0.0,
             balanceScore = 0.0,
             parityScore = 0.0,
-            sumScore = 0.0
+            sumScore = 0.0,
+            additionalScore = 0.0
         )
     }
 }

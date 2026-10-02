@@ -48,8 +48,12 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import ru.taniayn.optimizer.backtest.BacktestConfig
 
 class MainActivity : ComponentActivity() {
+
+    private val trainSize: Int
+        get() = BacktestConfig.calculateTrainSize(draws.size)
 
     private var drawCount by mutableIntStateOf(0)
     private var draws by mutableStateOf<List<RapidoDraw>>(emptyList())
@@ -105,11 +109,11 @@ class MainActivity : ComponentActivity() {
                         WindowOptimizer.applyHolmCorrection(
                             WindowOptimizer.testAllHotWindows(
                                 draws = draws,
-                                trainSize = 385
+                                trainSize = trainSize
                             ) +
                                     WindowOptimizer.testAllColdWindows(
                                         draws = draws,
-                                        trainSize = 385
+                                        trainSize = trainSize
                                     )
                         )
 
@@ -117,12 +121,12 @@ class MainActivity : ComponentActivity() {
 
                         Backtester.runRandom(
                             draws = draws,
-                            trainSize = 385
+                            trainSize = trainSize
                         ),
 
                         Backtester.run(
                             draws = draws,
-                            trainSize = 385,
+                            trainSize = trainSize,
                             strategy = Strategies::hot200,
                             strategyName = "HOT 200"
                         ).let { result ->
@@ -130,7 +134,7 @@ class MainActivity : ComponentActivity() {
                             val statisticalResult =
                                 StatisticalTest.compareWithRandom(
                                     draws = draws,
-                                    trainSize = 385,
+                                    trainSize = trainSize,
                                     strategy = Strategies::hot200
                                 )
 
@@ -148,7 +152,7 @@ class MainActivity : ComponentActivity() {
 
                         Backtester.run(
                             draws = draws,
-                            trainSize = 385,
+                            trainSize = trainSize,
                             strategy = Strategies::cold200,
                             strategyName = "COLD 200"
                         ).let { result ->
@@ -156,7 +160,7 @@ class MainActivity : ComponentActivity() {
                             val statisticalResult =
                                 StatisticalTest.compareWithRandom(
                                     draws = draws,
-                                    trainSize = 385,
+                                    trainSize = trainSize,
                                     strategy = Strategies::cold200
                                 )
 
@@ -174,7 +178,7 @@ class MainActivity : ComponentActivity() {
 
                         Backtester.run(
                             draws = draws,
-                            trainSize = 385,
+                            trainSize = trainSize,
                             strategy = Strategies::hot50,
                             strategyName = "HOT 50"
                         ).let { result ->
@@ -182,7 +186,7 @@ class MainActivity : ComponentActivity() {
                             val statisticalResult =
                                 StatisticalTest.compareWithRandom(
                                     draws = draws,
-                                    trainSize = 385,
+                                    trainSize = trainSize,
                                     strategy = Strategies::hot50
                                 )
 
@@ -200,7 +204,7 @@ class MainActivity : ComponentActivity() {
 
                         Backtester.run(
                             draws = draws,
-                            trainSize = 385,
+                            trainSize = trainSize,
                             strategy = Strategies::cold50,
                             strategyName = "COLD 50"
                         ).let { result ->
@@ -208,7 +212,7 @@ class MainActivity : ComponentActivity() {
                             val statisticalResult =
                                 StatisticalTest.compareWithRandom(
                                     draws = draws,
-                                    trainSize = 385,
+                                    trainSize = trainSize,
                                     strategy = Strategies::cold50
                                 )
 
@@ -239,23 +243,34 @@ class MainActivity : ComponentActivity() {
                 drawCount = drawCount,
                 numberFrequency = numberFrequency,
                 additionalNumberFrequency = additionalNumberFrequency,
-                showAnalysis = showAnalysis,
-                showInfo = showInfo,
                 backtestResults = backtestResults,
                 optimizationResults = optimizationResults,
-                recommendedCombinations = recommendedCombinations,
-                showRecommendations = showRecommendations,
-                generatorBacktestResult = generatorBacktestResult,
-                showGeneratorBacktest = showGeneratorBacktest,
-                isGeneratorBacktestRunning = isGeneratorBacktestRunning,
-                onGeneratorBacktestBack = {
-                    showGeneratorBacktest = false
+                showAnalysis = showAnalysis,
+                showInfo = showInfo,
+                onShowAnalysis = {
+                    showAnalysis = true
                 },
+                onBack = {
+                    showAnalysis = false
+                },
+                onPickCsv = {
+                    csvFilePicker.launch(
+                        arrayOf(
+                            "text/csv",
+                            "text/comma-separated-values",
+                            "*/*"
+                        )
+                    )
+                },
+                onShowInfo = { showInfo = true },
+                onInfoBack = { showInfo = false },
+                recommendedCombinations = recommendedCombinations,
 
+                showRecommendations = showRecommendations,
                 onShowRecommendations = {
-                    if (draws.size > 385) {
+                    if (draws.size >= 2) {
 
-                        val trainHistory = draws.take(385)
+                        val trainHistory = draws.take(trainSize)
 
                         val candidates =
                             CombinationGenerator.generateCandidates(
@@ -291,7 +306,7 @@ class MainActivity : ComponentActivity() {
 
                             GeneratorBacktester.run(
                                 draws = draws,
-                                trainSize = 385,
+                                trainSize = trainSize,
                                 window = 200,
                                 recommendationsCount = 5,
                                 candidatesCount = 300
@@ -304,23 +319,12 @@ class MainActivity : ComponentActivity() {
                         showGeneratorBacktest = true
                     }
                 },
-                onShowAnalysis = {
-                    showAnalysis = true
-                },
-                onShowInfo = { showInfo = true },
-                onBack = {
-                    showAnalysis = false
-                },
-                onInfoBack = { showInfo = false },
-                onPickCsv = {
-                    csvFilePicker.launch(
-                        arrayOf(
-                            "text/csv",
-                            "text/comma-separated-values",
-                            "*/*"
-                        )
-                    )
-                }
+                generatorBacktestResult = generatorBacktestResult,
+                showGeneratorBacktest = showGeneratorBacktest,
+                isGeneratorBacktestRunning = isGeneratorBacktestRunning,
+                onGeneratorBacktestBack = {
+                    showGeneratorBacktest = false
+                },trainSize = trainSize
             )
         }
     }
@@ -349,8 +353,9 @@ fun OptimizerApp(
     showGeneratorBacktest: Boolean,
     isGeneratorBacktestRunning: Boolean,
     onGeneratorBacktestBack: () -> Unit,
+    trainSize: Int,
 
-) {
+    ) {
     if (showInfo) {
         InfoScreen(
             onBack = onInfoBack
@@ -382,13 +387,6 @@ fun OptimizerApp(
             result = generatorBacktestResult,
             onBack = onGeneratorBacktestBack
         )
-        return
-    } else if (showGeneratorBacktest) {
-
-    GeneratorBacktestScreen(
-        result = generatorBacktestResult,
-        onBack = onGeneratorBacktestBack
-    )
 
     return
 }
@@ -482,7 +480,7 @@ fun OptimizerApp(
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
-                    text = "Обучение: 385 тиражей → Проверка: 386 тиражей",
+                    text = "Обучение: $trainSize тиражей → Проверка: ${drawCount - trainSize} тиражей",
                     fontSize = 14.sp
                 )
 
@@ -495,7 +493,7 @@ fun OptimizerApp(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Проверено тиражей: 386",
+                    text = "Проверено тиражей: ${drawCount - trainSize}",
                     fontSize = 14.sp
                 )
 

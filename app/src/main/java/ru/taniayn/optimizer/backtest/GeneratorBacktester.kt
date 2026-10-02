@@ -39,7 +39,7 @@ object GeneratorBacktester {
 
     fun run(
         draws: List<RapidoDraw>,
-        trainSize: Int = 385,
+        trainSize: Int,
         window: Int = 200,
         recommendationsCount: Int = 5,
         candidatesCount: Int = 300
@@ -100,6 +100,9 @@ object GeneratorBacktester {
 
             val actualNumbers =
                 draws[i].numbers.toSet()
+
+            val actualAdditionalNumber =
+                draws[i].additionalNumber
 
             var bestGeneratorOverlap = 0
 
