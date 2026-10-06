@@ -112,6 +112,36 @@ fun GeneratorBacktestScreen(
                 text = "5+: ${result.matches5OrMore}",
                 fontSize = 17.sp
             )
+            Spacer(
+                modifier = Modifier.height(10.dp)
+            )
+
+            Text(
+                text = "Диагностика score",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = "< 0.80 → %.3f".format(
+                    result.lowScoreAverageOverlap
+                ),
+                fontSize = 15.sp
+            )
+
+            Text(
+                text = "0.80–0.85 → %.3f".format(
+                    result.mediumScoreAverageOverlap
+                ),
+                fontSize = 15.sp
+            )
+
+            Text(
+                text = "≥ 0.85 → %.3f".format(
+                    result.highScoreAverageOverlap
+                ),
+                fontSize = 15.sp
+            )
 
             Spacer(
                 modifier = Modifier.height(20.dp)
