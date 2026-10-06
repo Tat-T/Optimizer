@@ -132,6 +132,19 @@ fun RecommendationsScreen(
                     ),
                     fontSize = 14.sp
                 )
+                Text(
+                    text = "Пары: %.3f".format(
+                        result.pairScore
+                    ),
+                    fontSize = 14.sp
+                )
+
+                Text(
+                    text = "Итоговый score: %.3f".format(
+                        result.score
+                    ),
+                    fontSize = 14.sp
+                )
 
                 Text(
                     text = "HOT/COLD: %.3f".format(

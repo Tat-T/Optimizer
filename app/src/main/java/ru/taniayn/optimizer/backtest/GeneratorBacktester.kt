@@ -18,6 +18,8 @@ data class GeneratorBacktestResult(
     val averageOverlap: Double,
     val matches4OrMore: Int,
     val matches5OrMore: Int,
+    // Дополнительное число
+    val additionalHits: Int,
 
     // RANDOM — среднее по 5 комбинациям
     val randomAverageOverlap: Double,
@@ -32,7 +34,13 @@ data class GeneratorBacktestResult(
     // Лучший результат из 5 RANDOM
     val bestRandomAverage: Double,
     val bestRandom4OrMore: Int,
-    val bestRandom5OrMore: Int
+    val bestRandom5OrMore: Int,
+    val diagnostics: List<GeneratorDiagnostic>
+)
+
+data class GeneratorDiagnostic(
+    val score: Double,
+    val overlap: Int
 )
 
 object GeneratorBacktester {
@@ -52,6 +60,8 @@ object GeneratorBacktester {
         var totalGeneratorOverlap = 0
         var generatorMatches4OrMore = 0
         var generatorMatches5OrMore = 0
+
+        var additionalHits = 0
 
         var overallBestGeneratorOverlap = -1
         var overallBestGeneratorCombination = emptyList<Int>()
@@ -74,6 +84,7 @@ object GeneratorBacktester {
         var bestRandom5OrMore = 0
 
         var testedDraws = 0
+        val diagnostics = mutableListOf<GeneratorDiagnostic>()
 
         for (i in trainSize until draws.size) {
 
@@ -95,11 +106,13 @@ object GeneratorBacktester {
                 DiversifiedSelector.select(
                     candidates = candidates,
                     count = recommendationsCount,
-                    minDifference = 3
+                    minDifference = 2
                 )
 
             val actualNumbers =
                 draws[i].numbers.toSet()
+
+// Дополнительное число используется отдельно от 8 основных
 
             val actualAdditionalNumber =
                 draws[i].additionalNumber
@@ -108,11 +121,21 @@ object GeneratorBacktester {
 
             recommendations.forEach { recommendation ->
 
+                if (recommendation.additionalNumber == actualAdditionalNumber) {
+                    additionalHits++
+                }
                 val overlap =
                     recommendation.combination
                         .toSet()
                         .intersect(actualNumbers)
                         .size
+
+                diagnostics.add(
+                    GeneratorDiagnostic(
+                        score = recommendation.score,
+                        overlap = overlap
+                    )
+                )
 
                 totalGeneratorOverlap += overlap
 
@@ -258,6 +281,7 @@ object GeneratorBacktester {
             }
 
         return GeneratorBacktestResult(
+
             testedDraws = testedDraws,
             testedCombinations = testedCombinations,
             bestGeneratorCombination =
@@ -282,6 +306,8 @@ object GeneratorBacktester {
             matches4OrMore = generatorMatches4OrMore,
             matches5OrMore = generatorMatches5OrMore,
 
+            additionalHits = additionalHits,
+
             randomAverageOverlap = randomAverageOverlap,
             randomMatches4OrMore = randomMatches4OrMore,
             randomMatches5OrMore = randomMatches5OrMore,
@@ -303,7 +329,7 @@ object GeneratorBacktester {
 
             bestRandom5OrMore =
                 bestRandom5OrMore,
-
+            diagnostics = diagnostics
         )
     }
 
@@ -324,6 +350,8 @@ object GeneratorBacktester {
             matches4OrMore = 0,
             matches5OrMore = 0,
 
+            additionalHits = 0,
+
             randomAverageOverlap = 0.0,
             randomMatches4OrMore = 0,
             randomMatches5OrMore = 0,
@@ -334,6 +362,8 @@ object GeneratorBacktester {
 
             bestRandomAverage = 0.0,
             bestRandom4OrMore = 0,
-            bestRandom5OrMore = 0
+            bestRandom5OrMore = 0,
+
+            diagnostics = emptyList()
         )
 }

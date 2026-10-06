@@ -81,6 +81,10 @@ fun GeneratorBacktestScreen(
                 modifier = Modifier.height(24.dp)
             )
 
+            // ==========================================
+            // ГЕНЕРАТОР
+            // ==========================================
+
             Text(
                 text = "🎯 ГЕНЕРАТОР",
                 fontSize = 21.sp,
@@ -93,7 +97,7 @@ fun GeneratorBacktestScreen(
             )
 
             Text(
-                text = "Среднее: %.3f".format(
+                text = "Среднее по 5: %.3f".format(
                     result.averageOverlap
                 ),
                 fontSize = 17.sp
@@ -119,6 +123,10 @@ fun GeneratorBacktestScreen(
                 modifier = Modifier.height(20.dp)
             )
 
+            // ==========================================
+            // RANDOM
+            // ==========================================
+
             Text(
                 text = "🎲 RANDOM",
                 fontSize = 21.sp,
@@ -131,7 +139,7 @@ fun GeneratorBacktestScreen(
             )
 
             Text(
-                text = "Среднее: %.3f".format(
+                text = "Среднее по 5: %.3f".format(
                     result.randomAverageOverlap
                 ),
                 fontSize = 17.sp
@@ -143,7 +151,7 @@ fun GeneratorBacktestScreen(
             )
 
             Text(
-                text = "5+: ${result.bestRecommendation5OrMore}",
+                text = "5+: ${result.randomMatches5OrMore}",
                 fontSize = 17.sp
             )
 
@@ -157,12 +165,106 @@ fun GeneratorBacktestScreen(
                 modifier = Modifier.height(20.dp)
             )
 
+            // ==========================================
+            // ЛУЧШИЙ ИЗ 5 — ГЕНЕРАТОР
+            // ==========================================
+
             Text(
-                text = "🏆 ЛУЧШИЙ ИЗ 5 RANDOM",
+                text = "🏆 ЛУЧШИЙ ИЗ 5 — ГЕНЕРАТОР",
                 fontSize = 21.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.fillMaxWidth()
             )
+
+            Spacer(
+                modifier = Modifier.height(10.dp)
+            )
+
+            Text(
+                text = "Среднее: %.3f".format(
+                    result.bestRecommendationAverage
+                ),
+                fontSize = 17.sp
+            )
+
+            Text(
+                text = "4+: ${result.bestRecommendation4OrMore}",
+                fontSize = 17.sp
+            )
+
+            Text(
+                text = "5+: ${result.bestRecommendation5OrMore}",
+                fontSize = 17.sp
+            )
+
+            Text(
+                "Доп. число: ${result.additionalHits}",
+                fontSize = 14.sp
+            )
+
+            Spacer(
+                modifier = Modifier.height(20.dp)
+            )
+
+            HorizontalDivider()
+
+            Spacer(
+                modifier = Modifier.height(20.dp)
+            )
+
+            // ==========================================
+            // ЛУЧШИЙ ИЗ 5 — RANDOM
+            // ==========================================
+
+            Text(
+                text = "🏆 ЛУЧШИЙ ИЗ 5 — RANDOM",
+                fontSize = 21.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(
+                modifier = Modifier.height(10.dp)
+            )
+
+            Text(
+                text = "Среднее: %.3f".format(
+                    result.bestRandomAverage
+                ),
+                fontSize = 17.sp
+            )
+
+            Text(
+                text = "4+: ${result.bestRandom4OrMore}",
+                fontSize = 17.sp
+            )
+
+            Text(
+                text = "5+: ${result.bestRandom5OrMore}",
+                fontSize = 17.sp
+            )
+
+            Spacer(
+                modifier = Modifier.height(20.dp)
+            )
+
+            HorizontalDivider()
+
+            Spacer(
+                modifier = Modifier.height(20.dp)
+            )
+
+            // ==========================================
+            // МАКСИМАЛЬНОЕ ПОПАДАНИЕ — ГЕНЕРАТОР
+            // ==========================================
+
+            Text(
+                text = "🎯 МАКСИМАЛЬНОЕ ПОПАДАНИЕ — ГЕНЕРАТОР",
+                fontSize = 21.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.fillMaxWidth()
+            )
+
             Spacer(
                 modifier = Modifier.height(10.dp)
             )
@@ -191,29 +293,60 @@ fun GeneratorBacktestScreen(
             )
 
             Spacer(
+                modifier = Modifier.height(20.dp)
+            )
+
+            HorizontalDivider()
+
+            Spacer(
+                modifier = Modifier.height(20.dp)
+            )
+
+            // ==========================================
+            // МАКСИМАЛЬНОЕ ПОПАДАНИЕ — RANDOM
+            // ==========================================
+
+            Text(
+                text = "🎲 МАКСИМАЛЬНОЕ ПОПАДАНИЕ — RANDOM",
+                fontSize = 21.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(
                 modifier = Modifier.height(10.dp)
             )
 
             Text(
-                text = "Среднее: %.3f".format(
-                    result.bestRandomAverage
-                ),
+                text = "Комбинация: " +
+                        result.bestRandomCombination.joinToString("  ") {
+                            "%02d".format(it)
+                        },
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = "Попадание: " +
+                        "${result.bestRandomOverlap} из 8",
                 fontSize = 17.sp
             )
 
             Text(
-                text = "4+: ${result.bestRandom4OrMore}",
-                fontSize = 17.sp
-            )
-
-            Text(
-                text = "5+: ${result.bestRandom5OrMore}",
+                text = "Фактический тираж: " +
+                        result.bestRandomActualDraw.joinToString("  ") {
+                            "%02d".format(it)
+                        },
                 fontSize = 17.sp
             )
 
             Spacer(
                 modifier = Modifier.height(28.dp)
             )
+
+            // ==========================================
+            // ОБЪЯСНЕНИЕ
+            // ==========================================
 
             Text(
                 text = "Что проверяется",
@@ -241,8 +374,17 @@ fun GeneratorBacktestScreen(
             Text(
                 text = "«Лучший из 5» показывает результат лучшей " +
                         "комбинации из пяти для каждого проверяемого " +
-                        "тиража. Это отдельная метрика и она не означает, " +
-                        "что заранее известна лучшая комбинация.",
+                        "тиража. Это отдельная метрика.",
+                fontSize = 15.sp
+            )
+
+            Spacer(
+                modifier = Modifier.height(12.dp)
+            )
+
+            Text(
+                text = "«Максимальное попадание» показывает один " +
+                        "наилучший случай за весь исторический backtest.",
                 fontSize = 15.sp
             )
 

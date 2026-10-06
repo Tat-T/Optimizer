@@ -11,7 +11,8 @@ data class CombinationScore(
     val balanceScore: Double,
     val parityScore: Double,
     val sumScore: Double,
-    val additionalScore: Double
+    val additionalScore: Double,
+    val pairScore: Double
 )
 
 object CombinationScorer {
@@ -81,6 +82,52 @@ object CombinationScorer {
             if (maxFrequency > 0.0) {
                 (selectedFrequency / maxFrequency)
                     .coerceIn(0.0, 1.0)
+            } else {
+                0.0
+            }
+        // Историческая частота пар чисел
+        val pairCounts = mutableMapOf<Pair<Int, Int>, Int>()
+
+        recentHistory.forEach { draw ->
+            val numbers = draw.numbers.sorted()
+
+            for (i in 0 until numbers.size - 1) {
+                for (j in i + 1 until numbers.size) {
+                    val pair = Pair(numbers[i], numbers[j])
+                    pairCounts[pair] = (pairCounts[pair] ?: 0) + 1
+                }
+            }
+        }
+
+// Средняя частота пар внутри комбинации
+        val sortedCombination = combination.sorted()
+
+        var pairFrequencySum = 0.0
+        var pairCount = 0
+
+        for (i in 0 until sortedCombination.size - 1) {
+            for (j in i + 1 until sortedCombination.size) {
+                val pair = Pair(
+                    sortedCombination[i],
+                    sortedCombination[j]
+                )
+
+                pairFrequencySum += pairCounts[pair] ?: 0
+                pairCount++
+            }
+        }
+
+        val pairScore =
+            if (pairCount > 0 && pairCounts.isNotEmpty()) {
+
+                val maxPairFrequency =
+                    pairCounts.values.maxOrNull()
+                        ?.toDouble()
+                        ?: 1.0
+
+                ((pairFrequencySum / pairCount) / maxPairFrequency)
+                    .coerceIn(0.0, 1.0)
+
             } else {
                 0.0
             }
@@ -235,11 +282,12 @@ object CombinationScorer {
         // -------------------------------------------------
 
         val score =
-            frequencyScore * 0.35 +
-                    balanceScore * 0.25 +
+            frequencyScore * 0.30 +
+                    balanceScore * 0.20 +
                     parityScore * 0.15 +
                     sumScore * 0.15 +
-                    additionalScore * 0.10
+                    additionalScore * 0.10 +
+                    pairScore * 0.10
 
         return CombinationScore(
             combination = combination.sorted(),
@@ -249,7 +297,8 @@ object CombinationScorer {
             balanceScore = balanceScore,
             parityScore = parityScore,
             sumScore = sumScore,
-            additionalScore = additionalScore
+            additionalScore = additionalScore,
+            pairScore = pairScore
         )
     }
 
@@ -321,7 +370,8 @@ object CombinationScorer {
             balanceScore = 0.0,
             parityScore = 0.0,
             sumScore = 0.0,
-            additionalScore = 0.0
+            additionalScore = 0.0,
+            pairScore = 0.0
         )
     }
 }
