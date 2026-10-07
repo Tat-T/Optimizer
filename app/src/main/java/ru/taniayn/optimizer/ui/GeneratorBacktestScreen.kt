@@ -121,24 +121,95 @@ fun GeneratorBacktestScreen(
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
+            Text(
+                text = "TOP-5 по Score → %.3f".format(
+                    result.top5ScoreAverage
+                ),
+                fontSize = 15.sp
+            )
 
             Text(
-                text = "< 0.80 → %.3f".format(
+                text = "Выбранные 5 → %.3f".format(
+                    result.selectedScoreAverage
+                ),
+                fontSize = 15.sp
+            )
+
+            Text(
+                text = "Потеря Score → %.3f".format(
+                    result.top5ScoreAverage - result.selectedScoreAverage
+                ),
+                fontSize = 15.sp
+            )
+
+            Text(
+                text = "Frequency → %.3f".format(
+                    result.frequencyScoreAverage
+                ),
+                fontSize = 15.sp
+            )
+
+            Text(
+                text = "Balance → %.3f".format(
+                    result.balanceScoreAverage
+                ),
+                fontSize = 15.sp
+            )
+
+            Text(
+                text = "Parity → %.3f".format(
+                    result.parityScoreAverage
+                ),
+                fontSize = 15.sp
+            )
+
+            Text(
+                text = "Sum → %.3f".format(
+                    result.sumScoreAverage
+                ),
+                fontSize = 15.sp
+            )
+
+            Text(
+                text = "Pairs → %.3f".format(
+                    result.pairScoreAverage
+                ),
+                fontSize = 15.sp
+            )
+
+            //
+
+            Text(
+                text = "< 0.82 → %.3f".format(
                     result.lowScoreAverageOverlap
                 ),
                 fontSize = 15.sp
             )
 
             Text(
-                text = "0.80–0.85 → %.3f".format(
-                    result.mediumScoreAverageOverlap
+                text = "0.82–0.84 → %.3f".format(
+                    result.score82to84AverageOverlap
                 ),
                 fontSize = 15.sp
             )
 
             Text(
-                text = "≥ 0.85 → %.3f".format(
-                    result.highScoreAverageOverlap
+                text = "0.84–0.86 → %.3f".format(
+                    result.score84to86AverageOverlap
+                ),
+                fontSize = 15.sp
+            )
+
+            Text(
+                text = "0.86–0.88 → %.3f".format(
+                    result.score86to88AverageOverlap
+                ),
+                fontSize = 15.sp
+            )
+
+            Text(
+                text = "≥ 0.88 → %.3f".format(
+                    result.score88PlusAverageOverlap
                 ),
                 fontSize = 15.sp
             )

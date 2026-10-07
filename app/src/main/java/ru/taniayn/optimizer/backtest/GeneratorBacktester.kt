@@ -3,6 +3,7 @@ package ru.taniayn.optimizer.backtest
 import ru.taniayn.optimizer.model.RapidoDraw
 
 data class GeneratorBacktestResult(
+
     val testedDraws: Int,
     val testedCombinations: Int,
 
@@ -35,11 +36,30 @@ data class GeneratorBacktestResult(
     val bestRandomAverage: Double,
     val bestRandom4OrMore: Int,
     val bestRandom5OrMore: Int,
-    val diagnostics: List<GeneratorDiagnostic>
+    val diagnostics: List<GeneratorDiagnostic>,
+
+    val top5ScoreAverage: Double,
+    val selectedScoreAverage: Double,
+    val frequencyScoreAverage: Double,
+    val balanceScoreAverage: Double,
+    val parityScoreAverage: Double,
+    val sumScoreAverage: Double,
+    val pairScoreAverage: Double,
+
+    val lowScoreAverageOverlap: Double,
+    val score82to84AverageOverlap: Double,
+    val score84to86AverageOverlap: Double,
+    val score86to88AverageOverlap: Double,
+    val score88PlusAverageOverlap: Double
 )
 
 data class GeneratorDiagnostic(
     val score: Double,
+    val frequencyScore: Double,
+    val balanceScore: Double,
+    val parityScore: Double,
+    val sumScore: Double,
+    val pairScore: Double,
     val overlap: Int
 )
 
@@ -86,6 +106,14 @@ object GeneratorBacktester {
         var testedDraws = 0
         val diagnostics = mutableListOf<GeneratorDiagnostic>()
 
+        var totalTop5Score = 0.0
+        var totalSelectedScore = 0.0
+        var totalFrequencyScore = 0.0
+        var totalBalanceScore = 0.0
+        var totalParityScore = 0.0
+        var totalSumScore = 0.0
+        var totalPairScore = 0.0
+
         for (i in trainSize until draws.size) {
 
             val history = draws.subList(0, i)
@@ -108,6 +136,28 @@ object GeneratorBacktester {
                     count = recommendationsCount,
                     minDifference = 2
                 )
+            val top5Candidates =
+                candidates.take(recommendationsCount)
+
+            totalTop5Score +=
+                top5Candidates.sumOf { it.score }
+
+            totalSelectedScore +=
+                recommendations.sumOf { it.score }
+            totalFrequencyScore +=
+                recommendations.sumOf { it.frequencyScore }
+
+            totalBalanceScore +=
+                recommendations.sumOf { it.balanceScore }
+
+            totalParityScore +=
+                recommendations.sumOf { it.parityScore }
+
+            totalSumScore +=
+                recommendations.sumOf { it.sumScore }
+
+            totalPairScore +=
+                recommendations.sumOf { it.pairScore }
 
             val actualNumbers =
                 draws[i].numbers.toSet()
@@ -133,6 +183,11 @@ object GeneratorBacktester {
                 diagnostics.add(
                     GeneratorDiagnostic(
                         score = recommendation.score,
+                        frequencyScore = recommendation.frequencyScore,
+                        balanceScore = recommendation.balanceScore,
+                        parityScore = recommendation.parityScore,
+                        sumScore = recommendation.sumScore,
+                        pairScore = recommendation.pairScore,
                         overlap = overlap
                     )
                 )
@@ -279,8 +334,121 @@ object GeneratorBacktester {
             } else {
                 0.0
             }
+        val lowScoreDiagnostics =
+            diagnostics.filter { it.score < 0.82 }
+
+        val score82to84 =
+            diagnostics.filter {
+                it.score >= 0.82 && it.score < 0.84
+            }
+
+        val score84to86 =
+            diagnostics.filter {
+                it.score >= 0.84 && it.score < 0.86
+            }
+
+        val score86to88 =
+            diagnostics.filter {
+                it.score >= 0.86 && it.score < 0.88
+            }
+
+        val score88Plus =
+            diagnostics.filter {
+                it.score >= 0.88
+            }
+
+        val lowScoreAverageOverlap =
+            if (lowScoreDiagnostics.isNotEmpty()) {
+                lowScoreDiagnostics.map { it.overlap }.average()
+            } else {
+                0.0
+            }
+
+        val score82to84AverageOverlap =
+            if (score82to84.isNotEmpty()) {
+                score82to84.map { it.overlap }.average()
+            } else {
+                0.0
+            }
+
+        val score84to86AverageOverlap =
+            if (score84to86.isNotEmpty()) {
+                score84to86.map { it.overlap }.average()
+            } else {
+                0.0
+            }
+
+        val score86to88AverageOverlap =
+            if (score86to88.isNotEmpty()) {
+                score86to88.map { it.overlap }.average()
+            } else {
+                0.0
+            }
+
+        val score88PlusAverageOverlap =
+            if (score88Plus.isNotEmpty()) {
+                score88Plus.map { it.overlap }.average()
+            } else {
+                0.0
+            }
+        val top5ScoreAverage =
+            if (testedDraws > 0) {
+                totalTop5Score / testedDraws / recommendationsCount
+            } else {
+                0.0
+            }
+
+        val selectedScoreAverage =
+            if (testedDraws > 0) {
+                totalSelectedScore / testedDraws / recommendationsCount
+            } else {
+                0.0
+            }
+
+        val frequencyScoreAverage =
+            if (testedDraws > 0) {
+                totalFrequencyScore / testedDraws / recommendationsCount
+            } else {
+                0.0
+            }
+
+        val balanceScoreAverage =
+            if (testedDraws > 0) {
+                totalBalanceScore / testedDraws / recommendationsCount
+            } else {
+                0.0
+            }
+
+        val parityScoreAverage =
+            if (testedDraws > 0) {
+                totalParityScore / testedDraws / recommendationsCount
+            } else {
+                0.0
+            }
+
+        val sumScoreAverage =
+            if (testedDraws > 0) {
+                totalSumScore / testedDraws / recommendationsCount
+            } else {
+                0.0
+            }
+
+        val pairScoreAverage =
+            if (testedDraws > 0) {
+                totalPairScore / testedDraws / recommendationsCount
+            } else {
+                0.0
+            }
 
         return GeneratorBacktestResult(
+
+            top5ScoreAverage = top5ScoreAverage,
+            selectedScoreAverage = selectedScoreAverage,
+            frequencyScoreAverage = frequencyScoreAverage,
+            balanceScoreAverage = balanceScoreAverage,
+            parityScoreAverage = parityScoreAverage,
+            sumScoreAverage = sumScoreAverage,
+            pairScoreAverage = pairScoreAverage,
 
             testedDraws = testedDraws,
             testedCombinations = testedCombinations,
@@ -329,12 +497,26 @@ object GeneratorBacktester {
 
             bestRandom5OrMore =
                 bestRandom5OrMore,
-            diagnostics = diagnostics
+            diagnostics = diagnostics,
+
+            lowScoreAverageOverlap = lowScoreAverageOverlap,
+            score82to84AverageOverlap = score82to84AverageOverlap,
+            score84to86AverageOverlap = score84to86AverageOverlap,
+            score86to88AverageOverlap = score86to88AverageOverlap,
+            score88PlusAverageOverlap = score88PlusAverageOverlap
         )
     }
 
     private fun emptyResult(): GeneratorBacktestResult =
         GeneratorBacktestResult(
+            top5ScoreAverage = 0.0,
+            selectedScoreAverage = 0.0,
+            frequencyScoreAverage = 0.0,
+            balanceScoreAverage = 0.0,
+            parityScoreAverage = 0.0,
+            sumScoreAverage = 0.0,
+            pairScoreAverage = 0.0,
+
             testedDraws = 0,
             testedCombinations = 0,
 
@@ -364,6 +546,12 @@ object GeneratorBacktester {
             bestRandom4OrMore = 0,
             bestRandom5OrMore = 0,
 
-            diagnostics = emptyList()
+            diagnostics = emptyList(),
+
+            lowScoreAverageOverlap = 0.0,
+            score82to84AverageOverlap = 0.0,
+            score84to86AverageOverlap = 0.0,
+            score86to88AverageOverlap = 0.0,
+            score88PlusAverageOverlap = 0.0
         )
 }
