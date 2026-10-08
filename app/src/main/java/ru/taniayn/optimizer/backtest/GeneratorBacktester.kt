@@ -45,6 +45,11 @@ data class GeneratorBacktestResult(
     val parityScoreAverage: Double,
     val sumScoreAverage: Double,
     val pairScoreAverage: Double,
+    val frequencyDiagnostic: ComponentDiagnostic,
+    val balanceDiagnostic: ComponentDiagnostic,
+    val parityDiagnostic: ComponentDiagnostic,
+    val sumDiagnostic: ComponentDiagnostic,
+    val pairDiagnostic: ComponentDiagnostic,
 
     val lowScoreAverageOverlap: Double,
     val score82to84AverageOverlap: Double,
@@ -63,7 +68,50 @@ data class GeneratorDiagnostic(
     val overlap: Int
 )
 
+data class ComponentDiagnostic(
+    val lowAverageOverlap: Double,
+    val mediumAverageOverlap: Double,
+    val highAverageOverlap: Double,
+    val veryHighAverageOverlap: Double
+)
+
 object GeneratorBacktester {
+
+    private fun calculateComponentDiagnostic(
+        values: List<Pair<Double, Int>>
+    ): ComponentDiagnostic {
+
+        fun average(
+            filtered: List<Pair<Double, Int>>
+        ): Double {
+            return if (filtered.isNotEmpty()) {
+                filtered.map { it.second }.average()
+            } else {
+                0.0
+            }
+        }
+
+        return ComponentDiagnostic(
+            lowAverageOverlap = average(
+                values.filter { it.first < 0.70 }
+            ),
+            mediumAverageOverlap = average(
+                values.filter {
+                    it.first >= 0.70 && it.first < 0.80
+                }
+            ),
+            highAverageOverlap = average(
+                values.filter {
+                    it.first >= 0.80 && it.first < 0.90
+                }
+            ),
+            veryHighAverageOverlap = average(
+                values.filter {
+                    it.first >= 0.90
+                }
+            )
+        )
+    }
 
     fun run(
         draws: List<RapidoDraw>,
@@ -105,6 +153,12 @@ object GeneratorBacktester {
 
         var testedDraws = 0
         val diagnostics = mutableListOf<GeneratorDiagnostic>()
+
+        val frequencyDiagnostics = mutableListOf<Pair<Double, Int>>()
+        val balanceDiagnostics = mutableListOf<Pair<Double, Int>>()
+        val parityDiagnostics = mutableListOf<Pair<Double, Int>>()
+        val sumDiagnostics = mutableListOf<Pair<Double, Int>>()
+        val pairDiagnostics = mutableListOf<Pair<Double, Int>>()
 
         var totalTop5Score = 0.0
         var totalSelectedScore = 0.0
@@ -179,6 +233,26 @@ object GeneratorBacktester {
                         .toSet()
                         .intersect(actualNumbers)
                         .size
+
+                frequencyDiagnostics.add(
+                    recommendation.frequencyScore to overlap
+                )
+
+                balanceDiagnostics.add(
+                    recommendation.balanceScore to overlap
+                )
+
+                parityDiagnostics.add(
+                    recommendation.parityScore to overlap
+                )
+
+                sumDiagnostics.add(
+                    recommendation.sumScore to overlap
+                )
+
+                pairDiagnostics.add(
+                    recommendation.pairScore to overlap
+                )
 
                 diagnostics.add(
                     GeneratorDiagnostic(
@@ -391,6 +465,32 @@ object GeneratorBacktester {
             } else {
                 0.0
             }
+
+        val frequencyDiagnostic =
+            calculateComponentDiagnostic(
+                frequencyDiagnostics
+            )
+
+        val balanceDiagnostic =
+            calculateComponentDiagnostic(
+                balanceDiagnostics
+            )
+
+        val parityDiagnostic =
+            calculateComponentDiagnostic(
+                parityDiagnostics
+            )
+
+        val sumDiagnostic =
+            calculateComponentDiagnostic(
+                sumDiagnostics
+            )
+
+        val pairDiagnostic =
+            calculateComponentDiagnostic(
+                pairDiagnostics
+            )
+
         val top5ScoreAverage =
             if (testedDraws > 0) {
                 totalTop5Score / testedDraws / recommendationsCount
@@ -449,6 +549,11 @@ object GeneratorBacktester {
             parityScoreAverage = parityScoreAverage,
             sumScoreAverage = sumScoreAverage,
             pairScoreAverage = pairScoreAverage,
+            frequencyDiagnostic = frequencyDiagnostic,
+            balanceDiagnostic = balanceDiagnostic,
+            parityDiagnostic = parityDiagnostic,
+            sumDiagnostic = sumDiagnostic,
+            pairDiagnostic = pairDiagnostic,
 
             testedDraws = testedDraws,
             testedCombinations = testedCombinations,
@@ -516,6 +621,11 @@ object GeneratorBacktester {
             parityScoreAverage = 0.0,
             sumScoreAverage = 0.0,
             pairScoreAverage = 0.0,
+            frequencyDiagnostic = ComponentDiagnostic(0.0, 0.0, 0.0, 0.0),
+            balanceDiagnostic = ComponentDiagnostic(0.0, 0.0, 0.0, 0.0),
+            parityDiagnostic = ComponentDiagnostic(0.0, 0.0, 0.0, 0.0),
+            sumDiagnostic = ComponentDiagnostic(0.0, 0.0, 0.0, 0.0),
+            pairDiagnostic = ComponentDiagnostic(0.0, 0.0, 0.0, 0.0),
 
             testedDraws = 0,
             testedCombinations = 0,

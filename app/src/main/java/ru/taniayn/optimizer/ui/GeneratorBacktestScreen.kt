@@ -177,6 +177,40 @@ fun GeneratorBacktestScreen(
                 fontSize = 15.sp
             )
 
+            Text(
+                text = "Frequency по диапазонам:",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = "< 0.70 → %.3f".format(
+                    result.frequencyDiagnostic.lowAverageOverlap
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "0.70–0.80 → %.3f".format(
+                    result.frequencyDiagnostic.mediumAverageOverlap
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "0.80–0.90 → %.3f".format(
+                    result.frequencyDiagnostic.highAverageOverlap
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "≥ 0.90 → %.3f".format(
+                    result.frequencyDiagnostic.veryHighAverageOverlap
+                ),
+                fontSize = 14.sp
+            )
+
             //
 
             Text(
