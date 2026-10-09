@@ -72,7 +72,11 @@ data class ComponentDiagnostic(
     val lowAverageOverlap: Double,
     val mediumAverageOverlap: Double,
     val highAverageOverlap: Double,
-    val veryHighAverageOverlap: Double
+    val veryHighAverageOverlap: Double,
+    val lowCount: Int,
+    val mediumCount: Int,
+    val highCount: Int,
+    val veryHighCount: Int
 )
 
 object GeneratorBacktester {
@@ -109,7 +113,20 @@ object GeneratorBacktester {
                 values.filter {
                     it.first >= 0.90
                 }
-            )
+            ),
+
+            lowCount = values.count {
+                it.first < 0.70
+            },
+            mediumCount = values.count {
+                it.first >= 0.70 && it.first < 0.80
+            },
+            highCount = values.count {
+                it.first >= 0.80 && it.first < 0.90
+            },
+            veryHighCount = values.count {
+                it.first >= 0.90
+            }
         )
     }
 
@@ -621,11 +638,48 @@ object GeneratorBacktester {
             parityScoreAverage = 0.0,
             sumScoreAverage = 0.0,
             pairScoreAverage = 0.0,
-            frequencyDiagnostic = ComponentDiagnostic(0.0, 0.0, 0.0, 0.0),
-            balanceDiagnostic = ComponentDiagnostic(0.0, 0.0, 0.0, 0.0),
-            parityDiagnostic = ComponentDiagnostic(0.0, 0.0, 0.0, 0.0),
-            sumDiagnostic = ComponentDiagnostic(0.0, 0.0, 0.0, 0.0),
-            pairDiagnostic = ComponentDiagnostic(0.0, 0.0, 0.0, 0.0),
+            frequencyDiagnostic = ComponentDiagnostic(
+                lowAverageOverlap = 0.0,
+                mediumAverageOverlap = 0.0,
+                highAverageOverlap = 0.0,
+                veryHighAverageOverlap = 0.0,
+                lowCount = 0,
+                mediumCount = 0,
+                highCount = 0,
+                veryHighCount = 0
+            ),
+            balanceDiagnostic = ComponentDiagnostic(lowAverageOverlap = 0.0,
+                mediumAverageOverlap = 0.0,
+                highAverageOverlap = 0.0,
+                veryHighAverageOverlap = 0.0,
+                lowCount = 0,
+                mediumCount = 0,
+                highCount = 0,
+                veryHighCount = 0),
+            parityDiagnostic = ComponentDiagnostic(lowAverageOverlap = 0.0,
+                mediumAverageOverlap = 0.0,
+                highAverageOverlap = 0.0,
+                veryHighAverageOverlap = 0.0,
+                lowCount = 0,
+                mediumCount = 0,
+                highCount = 0,
+                veryHighCount = 0),
+            sumDiagnostic = ComponentDiagnostic(lowAverageOverlap = 0.0,
+                mediumAverageOverlap = 0.0,
+                highAverageOverlap = 0.0,
+                veryHighAverageOverlap = 0.0,
+                lowCount = 0,
+                mediumCount = 0,
+                highCount = 0,
+                veryHighCount = 0),
+            pairDiagnostic = ComponentDiagnostic(lowAverageOverlap = 0.0,
+                mediumAverageOverlap = 0.0,
+                highAverageOverlap = 0.0,
+                veryHighAverageOverlap = 0.0,
+                lowCount = 0,
+                mediumCount = 0,
+                highCount = 0,
+                veryHighCount = 0),
 
             testedDraws = 0,
             testedCombinations = 0,

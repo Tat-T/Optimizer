@@ -184,29 +184,71 @@ fun GeneratorBacktestScreen(
             )
 
             Text(
-                text = "< 0.70 → %.3f".format(
-                    result.frequencyDiagnostic.lowAverageOverlap
+                text = "< 0.70 → %.3f (n=%d)".format(
+                    result.frequencyDiagnostic.lowAverageOverlap,
+                    result.frequencyDiagnostic.lowCount
                 ),
                 fontSize = 14.sp
             )
 
             Text(
-                text = "0.70–0.80 → %.3f".format(
-                    result.frequencyDiagnostic.mediumAverageOverlap
+                text = "0.70–0.80 → %.3f (n=%d)".format(
+                    result.frequencyDiagnostic.mediumAverageOverlap,
+                    result.frequencyDiagnostic.mediumCount
                 ),
                 fontSize = 14.sp
             )
 
             Text(
-                text = "0.80–0.90 → %.3f".format(
-                    result.frequencyDiagnostic.highAverageOverlap
+                text = "0.80–0.90 → %.3f (n=%d)".format(
+                    result.frequencyDiagnostic.highAverageOverlap,
+                    result.frequencyDiagnostic.highCount
                 ),
                 fontSize = 14.sp
             )
 
             Text(
-                text = "≥ 0.90 → %.3f".format(
-                    result.frequencyDiagnostic.veryHighAverageOverlap
+                text = "≥ 0.90 → %.3f (n=%d)".format(
+                    result.frequencyDiagnostic.veryHighAverageOverlap,
+                    result.frequencyDiagnostic.veryHighCount
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "Sum по диапазонам:",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = "< 0.70 → %.3f (n=%d)".format(
+                    result.sumDiagnostic.lowAverageOverlap,
+                    result.sumDiagnostic.lowCount
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "0.70–0.80 → %.3f (n=%d)".format(
+                    result.sumDiagnostic.mediumAverageOverlap,
+                    result.sumDiagnostic.mediumCount
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "0.80–0.90 → %.3f (n=%d)".format(
+                    result.sumDiagnostic.highAverageOverlap,
+                    result.sumDiagnostic.highCount
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "≥ 0.90 → %.3f (n=%d)".format(
+                    result.sumDiagnostic.veryHighAverageOverlap,
+                    result.sumDiagnostic.veryHighCount
                 ),
                 fontSize = 14.sp
             )
