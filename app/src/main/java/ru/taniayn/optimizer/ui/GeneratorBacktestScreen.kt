@@ -253,6 +253,120 @@ fun GeneratorBacktestScreen(
                 fontSize = 14.sp
             )
 
+            Text(
+                text = "Balance по диапазонам:",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = "< 0.70 → %.3f (n=%d)".format(
+                    result.balanceDiagnostic.lowAverageOverlap,
+                    result.balanceDiagnostic.lowCount
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "0.70–0.80 → %.3f (n=%d)".format(
+                    result.balanceDiagnostic.mediumAverageOverlap,
+                    result.balanceDiagnostic.mediumCount
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "0.80–0.90 → %.3f (n=%d)".format(
+                    result.balanceDiagnostic.highAverageOverlap,
+                    result.balanceDiagnostic.highCount
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "≥ 0.90 → %.3f (n=%d)".format(
+                    result.balanceDiagnostic.veryHighAverageOverlap,
+                    result.balanceDiagnostic.veryHighCount
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "Parity по диапазонам:",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = "< 0.70 → %.3f (n=%d)".format(
+                    result.parityDiagnostic.lowAverageOverlap,
+                    result.parityDiagnostic.lowCount
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "0.70–0.80 → %.3f (n=%d)".format(
+                    result.parityDiagnostic.mediumAverageOverlap,
+                    result.parityDiagnostic.mediumCount
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "0.80–0.90 → %.3f (n=%d)".format(
+                    result.parityDiagnostic.highAverageOverlap,
+                    result.parityDiagnostic.highCount
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "≥ 0.90 → %.3f (n=%d)".format(
+                    result.parityDiagnostic.veryHighAverageOverlap,
+                    result.parityDiagnostic.veryHighCount
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "Pairs по диапазонам:",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = "< 0.70 → %.3f (n=%d)".format(
+                    result.pairDiagnostic.lowAverageOverlap,
+                    result.pairDiagnostic.lowCount
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "0.70–0.80 → %.3f (n=%d)".format(
+                    result.pairDiagnostic.mediumAverageOverlap,
+                    result.pairDiagnostic.mediumCount
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "0.80–0.90 → %.3f (n=%d)".format(
+                    result.pairDiagnostic.highAverageOverlap,
+                    result.pairDiagnostic.highCount
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "≥ 0.90 → %.3f (n=%d)".format(
+                    result.pairDiagnostic.veryHighAverageOverlap,
+                    result.pairDiagnostic.veryHighCount
+                ),
+                fontSize = 14.sp
+            )
+
             //
 
             Text(

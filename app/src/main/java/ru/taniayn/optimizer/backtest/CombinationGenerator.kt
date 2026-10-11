@@ -9,7 +9,7 @@ object CombinationGenerator {
         history: List<RapidoDraw>,
         window: Int,
         count: Int = 1000,
-        seed: Int = 12345
+        seed: Int = System.nanoTime().toInt()
     ): List<CombinationScore> {
 
         if (history.isEmpty() || count <= 0) {
@@ -32,18 +32,18 @@ object CombinationGenerator {
         }
 
         return combinations
-            .map { combination ->
-
-                val additionalNumber =
-                    random.nextInt(1, 5)
-
-                CombinationScorer.score(
-                    combination = combination,
-                    history = history,
-                    window = window,
-                    additionalNumber = additionalNumber
-                )
+            .flatMap { combination ->
+                (1..4).map { additionalNumber ->
+                    CombinationScorer.score(
+                        combination = combination,
+                        history = history,
+                        window = window,
+                        additionalNumber = additionalNumber
+                    )
+                }
             }
             .sortedByDescending { it.score }
+            .distinctBy { it.combination }
+            .take(count)
     }
 }
