@@ -58,6 +58,7 @@ data class GeneratorBacktestResult(
     val score88PlusAverageOverlap: Double
 )
 
+
 data class GeneratorDiagnostic(
     val score: Double,
     val frequencyScore: Double,
@@ -65,6 +66,8 @@ data class GeneratorDiagnostic(
     val parityScore: Double,
     val sumScore: Double,
     val pairScore: Double,
+    val trendScore: Double,
+    val gapScore: Double,
     val overlap: Int
 )
 
@@ -275,7 +278,9 @@ object GeneratorBacktester {
                         parityScore = recommendation.parityScore,
                         sumScore = recommendation.sumScore,
                         pairScore = recommendation.pairScore,
-                        overlap = overlap
+                        overlap = overlap,
+                        trendScore = recommendation.trendScore,
+                        gapScore = recommendation.gapScore,
                     )
                 )
 

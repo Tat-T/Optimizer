@@ -12,7 +12,9 @@ data class CombinationScore(
     val parityScore: Double,
     val sumScore: Double,
     val additionalScore: Double,
-    val pairScore: Double
+    val pairScore: Double,
+    val trendScore: Double,
+    val gapScore: Double
 )
 
 object CombinationScorer {
@@ -276,18 +278,52 @@ object CombinationScorer {
                 minValue = minSum,
                 maxValue = maxSum
             )
+// -------------------------------------------------
+// 5. Тренд и интервалы выпадений
+// -------------------------------------------------
 
+        val numberTrends =
+            NumberTrendCalculator.calculate(recentHistory)
+
+        val trendsByNumber =
+            numberTrends.associateBy { it.number }
+
+        val selectedTrends =
+            combination.mapNotNull { trendsByNumber[it] }
+
+        val trendScore =
+            if (selectedTrends.isNotEmpty()) {
+                (
+                        selectedTrends.sumOf { it.trend } /
+                                selectedTrends.size + 1.0
+                        ).coerceIn(0.0, 1.0)
+            } else {
+                0.5
+            }
+
+        val gapScore =
+            if (selectedTrends.isNotEmpty()) {
+                selectedTrends
+                    .map { it.gapRatio }
+                    .average()
+                    .let { 1.0 / (1.0 + abs(it - 1.0)) }
+            } else {
+                0.5
+            }
         // -------------------------------------------------
         // 5. Итоговая оценка
         // -------------------------------------------------
 
+
         val score =
-            frequencyScore * 0.30 +
-                    balanceScore * 0.20 +
-                    parityScore * 0.15 +
-                    sumScore * 0.15 +
+            frequencyScore * 0.25 +
+                    balanceScore * 0.15 +
+                    parityScore * 0.10 +
+                    sumScore * 0.10 +
                     additionalScore * 0.10 +
-                    pairScore * 0.10
+                    pairScore * 0.10 +
+                    trendScore * 0.10 +
+                    gapScore * 0.10
 
         return CombinationScore(
             combination = combination.sorted(),
@@ -298,7 +334,9 @@ object CombinationScorer {
             parityScore = parityScore,
             sumScore = sumScore,
             additionalScore = additionalScore,
-            pairScore = pairScore
+            pairScore = pairScore,
+            trendScore = trendScore,
+            gapScore = gapScore
         )
     }
 
@@ -359,7 +397,7 @@ object CombinationScorer {
 
     private fun emptyScore(
         combination: List<Int>,
-        additionalNumber: Int = 0
+        additionalNumber: Int = 0,
     ): CombinationScore {
 
         return CombinationScore(
@@ -371,7 +409,9 @@ object CombinationScorer {
             parityScore = 0.0,
             sumScore = 0.0,
             additionalScore = 0.0,
-            pairScore = 0.0
+            pairScore = 0.0,
+            trendScore = 0.0,
+            gapScore = 0.0
         )
     }
 }
