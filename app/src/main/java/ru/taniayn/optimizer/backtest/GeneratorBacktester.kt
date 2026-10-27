@@ -50,6 +50,8 @@ data class GeneratorBacktestResult(
     val parityDiagnostic: ComponentDiagnostic,
     val sumDiagnostic: ComponentDiagnostic,
     val pairDiagnostic: ComponentDiagnostic,
+    val trendDiagnostic: ComponentDiagnostic,
+    val gapDiagnostic: ComponentDiagnostic,
 
     val lowScoreAverageOverlap: Double,
     val score82to84AverageOverlap: Double,
@@ -179,6 +181,8 @@ object GeneratorBacktester {
         val parityDiagnostics = mutableListOf<Pair<Double, Int>>()
         val sumDiagnostics = mutableListOf<Pair<Double, Int>>()
         val pairDiagnostics = mutableListOf<Pair<Double, Int>>()
+        val trendDiagnostics = mutableListOf<Pair<Double, Int>>()
+        val gapDiagnostics = mutableListOf<Pair<Double, Int>>()
 
         var totalTop5Score = 0.0
         var totalSelectedScore = 0.0
@@ -249,6 +253,9 @@ object GeneratorBacktester {
                         .toSet()
                         .intersect(actualNumbers)
                         .size
+
+                trendDiagnostics.add(recommendation.trendScore to overlap)
+                gapDiagnostics.add(recommendation.gapScore to overlap)
 
                 frequencyDiagnostics.add(
                     recommendation.frequencyScore to overlap
@@ -509,6 +516,16 @@ object GeneratorBacktester {
                 pairDiagnostics
             )
 
+        val trendDiagnostic =
+            calculateComponentDiagnostic(
+                trendDiagnostics
+            )
+
+        val gapDiagnostic =
+            calculateComponentDiagnostic(
+                gapDiagnostics
+            )
+
         val top5ScoreAverage =
             if (testedDraws > 0) {
                 totalTop5Score / testedDraws / recommendationsCount
@@ -567,11 +584,14 @@ object GeneratorBacktester {
             parityScoreAverage = parityScoreAverage,
             sumScoreAverage = sumScoreAverage,
             pairScoreAverage = pairScoreAverage,
+
             frequencyDiagnostic = frequencyDiagnostic,
             balanceDiagnostic = balanceDiagnostic,
             parityDiagnostic = parityDiagnostic,
             sumDiagnostic = sumDiagnostic,
             pairDiagnostic = pairDiagnostic,
+            trendDiagnostic = trendDiagnostic,
+            gapDiagnostic = gapDiagnostic,
 
             testedDraws = testedDraws,
             testedCombinations = testedCombinations,
@@ -640,6 +660,26 @@ object GeneratorBacktester {
             sumScoreAverage = 0.0,
             pairScoreAverage = 0.0,
             frequencyDiagnostic = ComponentDiagnostic(
+                lowAverageOverlap = 0.0,
+                mediumAverageOverlap = 0.0,
+                highAverageOverlap = 0.0,
+                veryHighAverageOverlap = 0.0,
+                lowCount = 0,
+                mediumCount = 0,
+                highCount = 0,
+                veryHighCount = 0
+            ),
+            trendDiagnostic = ComponentDiagnostic(
+                lowAverageOverlap = 0.0,
+                mediumAverageOverlap = 0.0,
+                highAverageOverlap = 0.0,
+                veryHighAverageOverlap = 0.0,
+                lowCount = 0,
+                mediumCount = 0,
+                highCount = 0,
+                veryHighCount = 0
+            ),
+            gapDiagnostic = ComponentDiagnostic(
                 lowAverageOverlap = 0.0,
                 mediumAverageOverlap = 0.0,
                 highAverageOverlap = 0.0,

@@ -294,9 +294,8 @@ object CombinationScorer {
         val trendScore =
             if (selectedTrends.isNotEmpty()) {
                 (
-                        selectedTrends.sumOf { it.trend } /
-                                selectedTrends.size + 1.0
-                        ).coerceIn(0.0, 1.0)
+                        selectedTrends.map { it.trend }.average() + 0.10
+                        ).let { (it / 0.20).coerceIn(0.0, 1.0) }
             } else {
                 0.5
             }

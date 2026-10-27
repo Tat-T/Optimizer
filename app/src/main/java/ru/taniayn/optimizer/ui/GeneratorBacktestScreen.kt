@@ -216,6 +216,81 @@ fun GeneratorBacktestScreen(
             )
 
             Text(
+                text = "Trend по диапазонам:",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = "< 0.70 → %.3f (n=%d)".format(
+                    result.trendDiagnostic.lowAverageOverlap,
+                    result.trendDiagnostic.lowCount
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "0.70–0.80 → %.3f (n=%d)".format(
+                    result.trendDiagnostic.mediumAverageOverlap,
+                    result.trendDiagnostic.mediumCount
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "0.80–0.90 → %.3f (n=%d)".format(
+                    result.trendDiagnostic.highAverageOverlap,
+                    result.trendDiagnostic.highCount
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "≥ 0.90 → %.3f (n=%d)".format(
+                    result.trendDiagnostic.veryHighAverageOverlap,
+                    result.trendDiagnostic.veryHighCount
+                ),
+                fontSize = 14.sp
+            )
+            Text(
+                text = "Gap — интервалы по диапазонам:",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = "< 0.70 → %.3f (n=%d)".format(
+                    result.gapDiagnostic.lowAverageOverlap,
+                    result.gapDiagnostic.lowCount
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "0.70–0.80 → %.3f (n=%d)".format(
+                    result.gapDiagnostic.mediumAverageOverlap,
+                    result.gapDiagnostic.mediumCount
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "0.80–0.90 → %.3f (n=%d)".format(
+                    result.gapDiagnostic.highAverageOverlap,
+                    result.gapDiagnostic.highCount
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "≥ 0.90 → %.3f (n=%d)".format(
+                    result.gapDiagnostic.veryHighAverageOverlap,
+                    result.gapDiagnostic.veryHighCount
+                ),
+                fontSize = 14.sp
+            )
+
+            Text(
                 text = "Sum по диапазонам:",
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold
