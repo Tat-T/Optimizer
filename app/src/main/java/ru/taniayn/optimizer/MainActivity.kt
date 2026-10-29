@@ -270,7 +270,7 @@ class MainActivity : ComponentActivity() {
                 onShowRecommendations = {
                     if (draws.size >= 2) {
 
-                        val trainHistory = draws.take(trainSize)
+                        val trainHistory = draws
 
                         val candidates =
                             CombinationGenerator.generateCandidates(

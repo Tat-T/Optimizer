@@ -209,7 +209,12 @@ object GeneratorBacktester {
                 )
 
             val recommendations =
-                candidates.take(5)
+                DiversifiedSelector.select(
+                    candidates = candidates,
+                    count = recommendationsCount,
+                    minDifference = 3
+                )
+
             val top5Candidates =
                 candidates.take(recommendationsCount)
 
