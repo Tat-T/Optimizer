@@ -77,6 +77,11 @@ fun GeneratorBacktestScreen(
                 fontSize = 16.sp
             )
 
+            Text(
+                text = "Пропущено тиражей: ${result.skippedDraws}",
+                fontSize = 16.sp
+            )
+
             Spacer(
                 modifier = Modifier.height(24.dp)
             )
