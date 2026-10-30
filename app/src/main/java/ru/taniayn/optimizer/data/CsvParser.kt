@@ -34,18 +34,34 @@ object CsvParser {
             val drawNumber = columns[0].trim().toIntOrNull()
                 ?: return@forEachIndexed
 
-            val numbers = columns[2]
-                .split(",")
-                .mapNotNull { it.trim().toIntOrNull() }
 
-            // В Рапидо:
-            // 8 основных чисел + 1 дополнительное.
-            if (numbers.size != 9) {
+            val parsedNumbers = columns[2]
+                .split(",")
+                .map { it.trim().toIntOrNull() }
+
+// В Рапидо: 8 основных чисел и 1 дополнительное.
+            if (parsedNumbers.size != 9 || parsedNumbers.any { it == null }) {
                 return@forEachIndexed
             }
 
+            val numbers = parsedNumbers.filterNotNull()
             val mainNumbers = numbers.take(8)
             val additionalNumber = numbers[8]
+
+// Основные числа должны быть уникальными и находиться в диапазоне 1–20.
+            if (
+                mainNumbers.size != 8 ||
+                mainNumbers.any { it !in 1..20 } ||
+                mainNumbers.distinct().size != 8
+            ) {
+                return@forEachIndexed
+            }
+
+// Дополнительное число должно находиться в диапазоне 1–4.
+            if (additionalNumber !in 1..4) {
+                return@forEachIndexed
+            }
+
 
             result.add(
                 RapidoDraw(
@@ -57,6 +73,8 @@ object CsvParser {
         }
 
         return result
+            .distinctBy { it.drawNumber }
+            .sortedBy { it.drawNumber }
     }
 
     /**

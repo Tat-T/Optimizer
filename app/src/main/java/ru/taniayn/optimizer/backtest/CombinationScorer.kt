@@ -19,6 +19,241 @@ data class CombinationScore(
 
 object CombinationScorer {
 
+    data class PreparedStats(
+        val frequency: Map<Int, Int>,
+        val maxFrequency: Double,
+        val pairCounts: Map<Pair<Int, Int>, Int>,
+        val maxPairFrequency: Double,
+        val additionalFrequency: Map<Int, Int>,
+        val maxAdditionalFrequency: Double,
+        val hotNumbers: Set<Int>,
+        val historicalHotCounts: List<Int>,
+        val historicalEvenCounts: List<Int>,
+        val historicalSums: List<Int>,
+        val minSum: Int,
+        val maxSum: Int,
+        val trendsByNumber: Map<Int, NumberTrend>
+    )
+    fun prepare(
+        history: List<RapidoDraw>,
+        window: Int
+    ): PreparedStats {
+
+        val recentHistory = history.takeLast(
+            minOf(window, history.size)
+        )
+
+        val frequency = (1..20).associateWith { 0 }.toMutableMap()
+
+        recentHistory.forEach { draw ->
+            draw.numbers.forEach { number ->
+                if (number in 1..20) {
+                    frequency[number] = frequency.getValue(number) + 1
+                }
+            }
+        }
+
+        val maxFrequency =
+            frequency.values.maxOrNull()?.toDouble() ?: 1.0
+
+        val pairCounts = mutableMapOf<Pair<Int, Int>, Int>()
+
+        recentHistory.forEach { draw ->
+            val numbers = draw.numbers.sorted()
+
+            for (i in 0 until numbers.size - 1) {
+                for (j in i + 1 until numbers.size) {
+                    val pair = numbers[i] to numbers[j]
+                    pairCounts[pair] = (pairCounts[pair] ?: 0) + 1
+                }
+            }
+        }
+
+        val maxPairFrequency =
+            pairCounts.values.maxOrNull()?.toDouble() ?: 1.0
+
+        val additionalFrequency =
+            (1..4).associateWith { 0 }.toMutableMap()
+
+        recentHistory.forEach { draw ->
+            val number = draw.additionalNumber
+            if (number in 1..4) {
+                additionalFrequency[number] =
+                    additionalFrequency.getValue(number) + 1
+            }
+        }
+
+        val maxAdditionalFrequency =
+            additionalFrequency.values.maxOrNull()?.toDouble() ?: 1.0
+
+        val sortedByFrequency =
+            frequency.entries.sortedWith(
+                compareByDescending<Map.Entry<Int, Int>> { it.value }
+                    .thenBy { it.key }
+            )
+
+        val hotNumbers =
+            sortedByFrequency.take(8).map { it.key }.toSet()
+
+        val historicalHotCounts =
+            recentHistory.map { draw ->
+                draw.numbers.count { it in hotNumbers }
+            }
+
+        val historicalEvenCounts =
+            recentHistory.map { draw ->
+                draw.numbers.count { it % 2 == 0 }
+            }
+
+        val historicalSums =
+            recentHistory.map { it.numbers.sum() }
+
+        val minSum = historicalSums.minOrNull() ?: 0
+        val maxSum = historicalSums.maxOrNull() ?: 0
+
+        val trendsByNumber =
+            NumberTrendCalculator.calculateMap(recentHistory)
+
+        return PreparedStats(
+            frequency = frequency,
+            maxFrequency = maxFrequency,
+            pairCounts = pairCounts,
+            maxPairFrequency = maxPairFrequency,
+            additionalFrequency = additionalFrequency,
+            maxAdditionalFrequency = maxAdditionalFrequency,
+            hotNumbers = hotNumbers,
+            historicalHotCounts = historicalHotCounts,
+            historicalEvenCounts = historicalEvenCounts,
+            historicalSums = historicalSums,
+            minSum = minSum,
+            maxSum = maxSum,
+            trendsByNumber = trendsByNumber
+        )
+    }
+    fun score(
+        combination: List<Int>,
+        stats: PreparedStats,
+        additionalNumber: Int
+    ): CombinationScore {
+
+        if (
+            combination.size != 8 ||
+            combination.toSet().size != 8 ||
+            combination.any { it !in 1..20 } ||
+            additionalNumber !in 1..4
+        ) {
+            return emptyScore(combination, additionalNumber)
+        }
+
+        val selectedFrequency =
+            combination.sumOf { stats.frequency[it] ?: 0 }.toDouble() /
+                    combination.size
+
+        val frequencyScore =
+            if (stats.maxFrequency > 0.0) {
+                (selectedFrequency / stats.maxFrequency).coerceIn(0.0, 1.0)
+            } else 0.0
+
+        val sortedCombination = combination.sorted()
+        var pairFrequencySum = 0.0
+        var pairCount = 0
+
+        for (i in 0 until sortedCombination.size - 1) {
+            for (j in i + 1 until sortedCombination.size) {
+                val pair = sortedCombination[i] to sortedCombination[j]
+                pairFrequencySum += stats.pairCounts[pair] ?: 0
+                pairCount++
+            }
+        }
+
+        val pairScore =
+            if (pairCount > 0 && stats.pairCounts.isNotEmpty()) {
+                ((pairFrequencySum / pairCount) / stats.maxPairFrequency)
+                    .coerceIn(0.0, 1.0)
+            } else 0.0
+
+        val selectedAdditionalFrequency =
+            stats.additionalFrequency[additionalNumber]?.toDouble() ?: 0.0
+
+        val additionalScore =
+            if (stats.maxAdditionalFrequency > 0.0) {
+                (selectedAdditionalFrequency / stats.maxAdditionalFrequency)
+                    .coerceIn(0.0, 1.0)
+            } else 0.0
+
+        val candidateHotCount =
+            combination.count { it in stats.hotNumbers }
+
+        val balanceScore =
+            empiricalProbabilityScore(
+                value = candidateHotCount,
+                historicalValues = stats.historicalHotCounts,
+                minValue = 0,
+                maxValue = 8
+            )
+
+        val candidateEvenCount =
+            combination.count { it % 2 == 0 }
+
+        val parityScore =
+            empiricalProbabilityScore(
+                value = candidateEvenCount,
+                historicalValues = stats.historicalEvenCounts,
+                minValue = 0,
+                maxValue = 8
+            )
+
+        val candidateSum = combination.sum()
+
+        val sumScore =
+            empiricalProbabilityScore(
+                value = candidateSum,
+                historicalValues = stats.historicalSums,
+                minValue = stats.minSum,
+                maxValue = stats.maxSum
+            )
+
+        val selectedTrends =
+            combination.mapNotNull { stats.trendsByNumber[it] }
+
+        val trendScore =
+            if (selectedTrends.isNotEmpty()) {
+                (
+                        (selectedTrends.map { it.trend }.average() + 0.10) / 0.20
+                        ).coerceIn(0.0, 1.0)
+            } else 0.5
+
+        val gapScore =
+            if (selectedTrends.isNotEmpty()) {
+                selectedTrends.map { it.gapRatio }
+                    .average()
+                    .let { 1.0 / (1.0 + abs(it - 1.0)) }
+            } else 0.5
+
+        val score =
+            frequencyScore * 0.25 +
+                    balanceScore * 0.15 +
+                    parityScore * 0.10 +
+                    sumScore * 0.10 +
+                    additionalScore * 0.10 +
+                    pairScore * 0.10 +
+                    trendScore * 0.10 +
+                    gapScore * 0.10
+
+        return CombinationScore(
+            combination = sortedCombination,
+            additionalNumber = additionalNumber,
+            score = score,
+            frequencyScore = frequencyScore,
+            balanceScore = balanceScore,
+            parityScore = parityScore,
+            sumScore = sumScore,
+            additionalScore = additionalScore,
+            pairScore = pairScore,
+            trendScore = trendScore,
+            gapScore = gapScore
+        )
+    }
     fun score(
         combination: List<Int>,
         history: List<RapidoDraw>,

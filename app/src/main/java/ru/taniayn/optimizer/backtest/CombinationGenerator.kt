@@ -18,6 +18,11 @@ object CombinationGenerator {
 
         val random = Random(seed)
 
+        val preparedStats = CombinationScorer.prepare(
+            history = history,
+            window = window
+        )
+
         val combinations = mutableSetOf<List<Int>>()
 
         while (combinations.size < count) {
@@ -36,14 +41,13 @@ object CombinationGenerator {
                 (1..4).map { additionalNumber ->
                     CombinationScorer.score(
                         combination = combination,
-                        history = history,
-                        window = window,
+                        stats = preparedStats,
                         additionalNumber = additionalNumber
                     )
                 }
             }
             .sortedByDescending { it.score }
-            .distinctBy { it.combination }
+            .distinctBy { it.combination to it.additionalNumber }
             .take(count)
     }
 }

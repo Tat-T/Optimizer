@@ -6,6 +6,7 @@ data class GeneratorBacktestResult(
 
     val testedDraws: Int,
     val testedCombinations: Int,
+    val skippedDraws: Int,
 
     val bestGeneratorCombination: List<Int>,
     val bestGeneratorActualDraw: List<Int>,
@@ -174,6 +175,7 @@ object GeneratorBacktester {
         var bestRandom5OrMore = 0
 
         var testedDraws = 0
+        var skippedDraws = 0
         val diagnostics = mutableListOf<GeneratorDiagnostic>()
 
         val frequencyDiagnostics = mutableListOf<Pair<Double, Int>>()
@@ -214,6 +216,10 @@ object GeneratorBacktester {
                     count = recommendationsCount,
                     minDifference = 3
                 )
+            if (recommendations.size != recommendationsCount) {
+                skippedDraws++
+                continue
+            }
 
             val top5Candidates =
                 candidates.take(recommendationsCount)
@@ -600,6 +606,7 @@ object GeneratorBacktester {
 
             testedDraws = testedDraws,
             testedCombinations = testedCombinations,
+            skippedDraws = skippedDraws,
             bestGeneratorCombination =
                 overallBestGeneratorCombination,
 
@@ -729,6 +736,7 @@ object GeneratorBacktester {
 
             testedDraws = 0,
             testedCombinations = 0,
+            skippedDraws = 0,
 
             bestGeneratorCombination = emptyList(),
             bestGeneratorActualDraw = emptyList(),

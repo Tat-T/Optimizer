@@ -101,4 +101,10 @@ object NumberTrendCalculator {
             )
         }
     }
+
+    fun calculateMap(
+        history: List<RapidoDraw>
+    ): Map<Int, NumberTrend> {
+        return calculate(history).associateBy { it.number }
+    }
 }
