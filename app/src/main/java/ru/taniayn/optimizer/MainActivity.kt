@@ -49,6 +49,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.taniayn.optimizer.backtest.BacktestConfig
+import ru.taniayn.optimizer.backtest.ScoreModelComparisonResult
 
 class MainActivity : ComponentActivity() {
 
@@ -65,11 +66,36 @@ class MainActivity : ComponentActivity() {
     private var optimizationResults by mutableStateOf<List<BacktestResult>>(emptyList())
     private var generatorBacktestResult by
     mutableStateOf<GeneratorBacktestResult?>(null)
+    private var scoreModelComparisonResult by
+    mutableStateOf<ScoreModelComparisonResult?>(null)
 
     private var showGeneratorBacktest by mutableStateOf(false)
     private var isGeneratorBacktestRunning by mutableStateOf(false)
+    private var showModelComparison by mutableStateOf(false)
+    private var isModelComparisonRunning by mutableStateOf(false)
     private var recommendedCombinations by mutableStateOf<List<CombinationScore>>(emptyList())
     private var showRecommendations by mutableStateOf(false)
+
+    private fun runScoreModelComparison() {
+        isModelComparisonRunning = true
+        showModelComparison = false
+
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.Default) {
+                GeneratorBacktester.compareModels(
+                    draws = draws,
+                    trainSize = trainSize,
+                    window = 200,
+                    recommendationsCount = 5,
+                    candidatesCount = 300
+                )
+            }
+
+            scoreModelComparisonResult = result
+            isModelComparisonRunning = false
+            showModelComparison = true
+        }
+    }
 
     private val csvFilePicker =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -294,6 +320,10 @@ class MainActivity : ComponentActivity() {
                 onRecommendationsBack = {
                     showRecommendations = false
                 },
+                onCompareModels = {
+                    showRecommendations = false
+                    runScoreModelComparison()
+                },
                 onGeneratorBacktest = {
 
                     isGeneratorBacktestRunning = true
@@ -324,7 +354,11 @@ class MainActivity : ComponentActivity() {
                 isGeneratorBacktestRunning = isGeneratorBacktestRunning,
                 onGeneratorBacktestBack = {
                     showGeneratorBacktest = false
-                },trainSize = trainSize
+                },
+                scoreModelComparisonResult = scoreModelComparisonResult,
+                showModelComparison = showModelComparison,
+                isModelComparisonRunning = isModelComparisonRunning,
+                trainSize = trainSize
             )
         }
     }
@@ -349,10 +383,14 @@ fun OptimizerApp(
     onShowRecommendations: () -> Unit,
     onRecommendationsBack: () -> Unit,
     onGeneratorBacktest: () -> Unit,
+    onCompareModels: () -> Unit,
     generatorBacktestResult: GeneratorBacktestResult?,
     showGeneratorBacktest: Boolean,
     isGeneratorBacktestRunning: Boolean,
     onGeneratorBacktestBack: () -> Unit,
+    scoreModelComparisonResult: ScoreModelComparisonResult?,
+    showModelComparison: Boolean,
+    isModelComparisonRunning: Boolean,
     trainSize: Int,
 
     ) {
@@ -374,7 +412,8 @@ fun OptimizerApp(
         RecommendationsScreen(
             combinations = recommendedCombinations,
             onBack = onRecommendationsBack,
-            onBacktest = onGeneratorBacktest
+            onBacktest = onGeneratorBacktest,
+            onCompareModels = onCompareModels
         )
 
         return

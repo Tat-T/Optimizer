@@ -84,6 +84,43 @@ data class ComponentDiagnostic(
     val highCount: Int,
     val veryHighCount: Int
 )
+data class ScoreModelResult(
+    val model: ScoreModel,
+    val testedDraws: Int,
+    val skippedDraws: Int,
+    val averageOverlap: Double,
+    val matches4OrMore: Int,
+    val matches5OrMore: Int,
+    val bestAverageOverlap: Double,
+    val best4OrMore: Int,
+    val best5OrMore: Int,
+    val additionalHits: Int
+)
+
+data class ScoreModelComparisonResult(
+    val results: List<ScoreModelResult>,
+    val randomAverageOverlap: Double,
+    val randomMatches4OrMore: Int,
+    val randomMatches5OrMore: Int,
+    val randomBestAverage: Double,
+    val randomBest4OrMore: Int,
+    val randomBest5OrMore: Int
+)
+
+private class ModelAccumulator {
+    var testedDraws = 0
+    var skippedDraws = 0
+
+    var totalOverlap = 0
+    var matches4OrMore = 0
+    var matches5OrMore = 0
+
+    var totalBestOverlap = 0
+    var best4OrMore = 0
+    var best5OrMore = 0
+
+    var additionalHits = 0
+}
 
 object GeneratorBacktester {
 
@@ -133,6 +170,240 @@ object GeneratorBacktester {
             veryHighCount = values.count {
                 it.first >= 0.90
             }
+        )
+    }
+
+    fun compareModels(
+        draws: List<RapidoDraw>,
+        trainSize: Int,
+        window: Int = 200,
+        recommendationsCount: Int = 5,
+        candidatesCount: Int = 300
+    ): ScoreModelComparisonResult {
+
+        if (draws.size <= trainSize) {
+            return ScoreModelComparisonResult(
+                results = emptyList(),
+                randomAverageOverlap = 0.0,
+                randomMatches4OrMore = 0,
+                randomMatches5OrMore = 0,
+                randomBestAverage = 0.0,
+                randomBest4OrMore = 0,
+                randomBest5OrMore = 0
+            )
+        }
+
+        val accumulators = ScoreModel.values().associateWith {
+            ModelAccumulator()
+        }
+
+        var randomTotalOverlap = 0
+        var randomMatches4OrMore = 0
+        var randomMatches5OrMore = 0
+
+        var randomTotalBestOverlap = 0
+        var randomBest4OrMore = 0
+        var randomBest5OrMore = 0
+
+        var randomTestedDraws = 0
+
+        for (i in trainSize until draws.size) {
+
+            val history = draws.subList(0, i)
+            val actualNumbers = draws[i].numbers.toSet()
+            val actualAdditionalNumber = draws[i].additionalNumber
+
+            // Все модели получают один и тот же набор кандидатов.
+            val candidates = CombinationGenerator.generateCandidates(
+                history = history,
+                window = window,
+                count = candidatesCount,
+                seed = 12345 + i,
+                scoreModel = ScoreModel.FULL,
+                returnAllCandidates = true
+            )
+
+            // ---------------------------------
+            // СРАВНЕНИЕ МОДЕЛЕЙ
+            // ---------------------------------
+
+            for (model in ScoreModel.values()) {
+
+                val accumulator = accumulators.getValue(model)
+
+                val rankedCandidates = candidates
+                    .map { candidate ->
+                        candidate.copy(
+                            score = CombinationScorer.calculateModelScore(
+                                item = candidate,
+                                model = model
+                            )
+                        )
+                    }
+                    .sortedByDescending { it.score }
+
+                val recommendations = DiversifiedSelector.select(
+                    candidates = rankedCandidates,
+                    count = recommendationsCount,
+                    minDifference = 3
+                )
+
+                if (recommendations.size != recommendationsCount) {
+                    accumulator.skippedDraws++
+                    continue
+                }
+
+                var bestOverlap = 0
+
+                recommendations.forEach { recommendation ->
+
+                    val overlap = recommendation.combination
+                        .toSet()
+                        .intersect(actualNumbers)
+                        .size
+
+                    accumulator.totalOverlap += overlap
+
+                    if (overlap >= 4) {
+                        accumulator.matches4OrMore++
+                    }
+
+                    if (overlap >= 5) {
+                        accumulator.matches5OrMore++
+                    }
+
+                    if (recommendation.additionalNumber == actualAdditionalNumber) {
+                        accumulator.additionalHits++
+                    }
+
+                    if (overlap > bestOverlap) {
+                        bestOverlap = overlap
+                    }
+                }
+
+                accumulator.totalBestOverlap += bestOverlap
+
+                if (bestOverlap >= 4) {
+                    accumulator.best4OrMore++
+                }
+
+                if (bestOverlap >= 5) {
+                    accumulator.best5OrMore++
+                }
+
+                accumulator.testedDraws++
+            }
+
+            // ---------------------------------
+            // RANDOM — те же тестовые тиражи
+            // ---------------------------------
+
+            var randomOverlapForDraw = 0
+            var bestRandomOverlap = 0
+
+            repeat(recommendationsCount) { number ->
+
+                val randomNumbers = RandomStrategy
+                    .generateForDraw(i * recommendationsCount + number)
+                    .toSet()
+
+                val overlap = randomNumbers
+                    .intersect(actualNumbers)
+                    .size
+
+                randomOverlapForDraw += overlap
+
+                if (overlap >= 4) {
+                    randomMatches4OrMore++
+                }
+
+                if (overlap >= 5) {
+                    randomMatches5OrMore++
+                }
+
+                if (overlap > bestRandomOverlap) {
+                    bestRandomOverlap = overlap
+                }
+            }
+
+            randomTotalOverlap += randomOverlapForDraw
+            randomTotalBestOverlap += bestRandomOverlap
+
+            if (bestRandomOverlap >= 4) {
+                randomBest4OrMore++
+            }
+
+            if (bestRandomOverlap >= 5) {
+                randomBest5OrMore++
+            }
+
+            randomTestedDraws++
+        }
+
+        // ---------------------------------
+        // ФОРМИРУЕМ РЕЗУЛЬТАТЫ
+        // ---------------------------------
+
+        val modelResults = ScoreModel.values().map { model ->
+
+            val accumulator = accumulators.getValue(model)
+
+            val testedCombinations =
+                accumulator.testedDraws * recommendationsCount
+
+            ScoreModelResult(
+                model = model,
+                testedDraws = accumulator.testedDraws,
+                skippedDraws = accumulator.skippedDraws,
+
+                averageOverlap =
+                    if (testedCombinations > 0) {
+                        accumulator.totalOverlap.toDouble() / testedCombinations
+                    } else {
+                        0.0
+                    },
+
+                matches4OrMore = accumulator.matches4OrMore,
+                matches5OrMore = accumulator.matches5OrMore,
+
+                bestAverageOverlap =
+                    if (accumulator.testedDraws > 0) {
+                        accumulator.totalBestOverlap.toDouble() /
+                                accumulator.testedDraws
+                    } else {
+                        0.0
+                    },
+
+                best4OrMore = accumulator.best4OrMore,
+                best5OrMore = accumulator.best5OrMore,
+                additionalHits = accumulator.additionalHits
+            )
+        }
+
+        val randomCombinations = randomTestedDraws * recommendationsCount
+
+        return ScoreModelComparisonResult(
+            results = modelResults,
+
+            randomAverageOverlap =
+                if (randomCombinations > 0) {
+                    randomTotalOverlap.toDouble() / randomCombinations
+                } else {
+                    0.0
+                },
+
+            randomMatches4OrMore = randomMatches4OrMore,
+            randomMatches5OrMore = randomMatches5OrMore,
+
+            randomBestAverage =
+                if (randomTestedDraws > 0) {
+                    randomTotalBestOverlap.toDouble() / randomTestedDraws
+                } else {
+                    0.0
+                },
+
+            randomBest4OrMore = randomBest4OrMore,
+            randomBest5OrMore = randomBest5OrMore
         )
     }
 

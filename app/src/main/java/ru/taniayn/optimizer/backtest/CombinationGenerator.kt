@@ -9,7 +9,9 @@ object CombinationGenerator {
         history: List<RapidoDraw>,
         window: Int,
         count: Int = 1000,
-        seed: Int = System.nanoTime().toInt()
+        seed: Int = System.nanoTime().toInt(),
+        scoreModel: ScoreModel = ScoreModel.FULL,
+        returnAllCandidates: Boolean = false
     ): List<CombinationScore> {
 
         if (history.isEmpty() || count <= 0) {
@@ -36,18 +38,25 @@ object CombinationGenerator {
             combinations.add(combination)
         }
 
-        return combinations
+        val candidates = combinations
             .flatMap { combination ->
                 (1..4).map { additionalNumber ->
                     CombinationScorer.score(
                         combination = combination,
                         stats = preparedStats,
-                        additionalNumber = additionalNumber
+                        additionalNumber = additionalNumber,
+                        scoreModel = scoreModel
                     )
                 }
             }
-            .sortedByDescending { it.score }
             .distinctBy { it.combination to it.additionalNumber }
-            .take(count)
+
+        return if (returnAllCandidates) {
+            candidates
+        } else {
+            candidates
+                .sortedByDescending { it.score }
+                .take(count)
+        }
     }
 }

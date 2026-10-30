@@ -17,6 +17,13 @@ data class CombinationScore(
     val gapScore: Double
 )
 
+enum class ScoreModel {
+    FREQUENCY_ONLY,
+    BASIC,
+    WITHOUT_TREND_GAP,
+    FULL
+}
+
 object CombinationScorer {
 
     data class PreparedStats(
@@ -133,7 +140,8 @@ object CombinationScorer {
     fun score(
         combination: List<Int>,
         stats: PreparedStats,
-        additionalNumber: Int
+        additionalNumber: Int,
+        scoreModel: ScoreModel = ScoreModel.FULL
     ): CombinationScore {
 
         if (
@@ -230,15 +238,38 @@ object CombinationScorer {
                     .let { 1.0 / (1.0 + abs(it - 1.0)) }
             } else 0.5
 
-        val score =
-            frequencyScore * 0.25 +
-                    balanceScore * 0.15 +
-                    parityScore * 0.10 +
-                    sumScore * 0.10 +
-                    additionalScore * 0.10 +
-                    pairScore * 0.10 +
-                    trendScore * 0.10 +
-                    gapScore * 0.10
+        val score = when (scoreModel) {
+
+            ScoreModel.FREQUENCY_ONLY -> {
+                frequencyScore
+            }
+
+            ScoreModel.BASIC -> {
+                frequencyScore * 0.50 +
+                        balanceScore * 0.30 +
+                        parityScore * 0.20
+            }
+
+            ScoreModel.WITHOUT_TREND_GAP -> {
+                frequencyScore * 0.3125 +
+                        balanceScore * 0.1875 +
+                        parityScore * 0.125 +
+                        sumScore * 0.125 +
+                        additionalScore * 0.125 +
+                        pairScore * 0.125
+            }
+
+            ScoreModel.FULL -> {
+                frequencyScore * 0.25 +
+                        balanceScore * 0.15 +
+                        parityScore * 0.10 +
+                        sumScore * 0.10 +
+                        additionalScore * 0.10 +
+                        pairScore * 0.10 +
+                        trendScore * 0.10 +
+                        gapScore * 0.10
+            }
+        }
 
         return CombinationScore(
             combination = sortedCombination,
@@ -647,5 +678,37 @@ object CombinationScorer {
             trendScore = 0.0,
             gapScore = 0.0
         )
+    }
+
+    fun calculateModelScore(
+        item: CombinationScore,
+        model: ScoreModel
+    ): Double {
+
+        return when (model) {
+
+            ScoreModel.FREQUENCY_ONLY -> {
+                item.frequencyScore
+            }
+
+            ScoreModel.BASIC -> {
+                item.frequencyScore * 0.50 +
+                        item.balanceScore * 0.30 +
+                        item.parityScore * 0.20
+            }
+
+            ScoreModel.WITHOUT_TREND_GAP -> {
+                item.frequencyScore * 0.3125 +
+                        item.balanceScore * 0.1875 +
+                        item.parityScore * 0.125 +
+                        item.sumScore * 0.125 +
+                        item.additionalScore * 0.125 +
+                        item.pairScore * 0.125
+            }
+
+            ScoreModel.FULL -> {
+                item.score
+            }
+        }
     }
 }

@@ -24,7 +24,8 @@ import ru.taniayn.optimizer.backtest.CombinationScore
 fun RecommendationsScreen(
     combinations: List<CombinationScore>,
     onBack: () -> Unit,
-    onBacktest: () -> Unit
+    onBacktest: () -> Unit,
+    onCompareModels: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -189,6 +190,19 @@ fun RecommendationsScreen(
         ) {
             Text(
                 text = "🧪 ПРОВЕРИТЬ ГЕНЕРАТОР",
+                fontSize = 16.sp
+            )
+        }
+
+        Spacer(
+            modifier = Modifier.height(12.dp)
+        )
+
+        Button(
+            onClick = onCompareModels
+        ) {
+            Text(
+                text = "⚖️ СРАВНИТЬ МОДЕЛИ",
                 fontSize = 16.sp
             )
         }
