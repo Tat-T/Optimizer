@@ -50,6 +50,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.taniayn.optimizer.backtest.BacktestConfig
 import ru.taniayn.optimizer.backtest.ScoreModelComparisonResult
+import ru.taniayn.optimizer.ui.ScoreModelComparisonScreen
 
 class MainActivity : ComponentActivity() {
 
@@ -358,6 +359,9 @@ class MainActivity : ComponentActivity() {
                 scoreModelComparisonResult = scoreModelComparisonResult,
                 showModelComparison = showModelComparison,
                 isModelComparisonRunning = isModelComparisonRunning,
+                onModelComparisonBack = {
+                    showModelComparison = false
+                },
                 trainSize = trainSize
             )
         }
@@ -391,6 +395,7 @@ fun OptimizerApp(
     scoreModelComparisonResult: ScoreModelComparisonResult?,
     showModelComparison: Boolean,
     isModelComparisonRunning: Boolean,
+    onModelComparisonBack: () -> Unit,
     trainSize: Int,
 
     ) {
@@ -417,6 +422,17 @@ fun OptimizerApp(
         )
 
         return
+
+    } else if (isModelComparisonRunning) {
+        GeneratorProgressScreen()
+        return
+    } else if (showModelComparison) {
+        ScoreModelComparisonScreen(
+            result = scoreModelComparisonResult,
+            onBack = onModelComparisonBack
+        )
+        return
+
     } else if (isGeneratorBacktestRunning) {
         GeneratorProgressScreen()
         return

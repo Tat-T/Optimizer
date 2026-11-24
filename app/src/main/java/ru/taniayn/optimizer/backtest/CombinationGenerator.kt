@@ -11,6 +11,7 @@ object CombinationGenerator {
         count: Int = 1000,
         seed: Int = System.nanoTime().toInt(),
         scoreModel: ScoreModel = ScoreModel.FULL,
+        weights: ScoreWeights = ScoreWeights(),
         returnAllCandidates: Boolean = false
     ): List<CombinationScore> {
 
@@ -45,7 +46,8 @@ object CombinationGenerator {
                         combination = combination,
                         stats = preparedStats,
                         additionalNumber = additionalNumber,
-                        scoreModel = scoreModel
+                        scoreModel = scoreModel,
+                        weights = weights
                     )
                 }
             }

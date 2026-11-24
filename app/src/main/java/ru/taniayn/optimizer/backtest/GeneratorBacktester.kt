@@ -99,12 +99,25 @@ data class ScoreModelResult(
 
 data class ScoreModelComparisonResult(
     val results: List<ScoreModelResult>,
+    val repeatResults: List<ScoreModelRepeatResult>,
     val randomAverageOverlap: Double,
     val randomMatches4OrMore: Int,
     val randomMatches5OrMore: Int,
     val randomBestAverage: Double,
     val randomBest4OrMore: Int,
     val randomBest5OrMore: Int
+)
+
+data class ScoreModelRepeatResult(
+    val repeatNumber: Int,
+
+    val basicAverageOverlap: Double,
+    val basicMatches4OrMore: Int,
+    val basicMatches5OrMore: Int,
+
+    val randomAverageOverlap: Double,
+    val randomMatches4OrMore: Int,
+    val randomMatches5OrMore: Int
 )
 
 private class ModelAccumulator {
@@ -178,12 +191,14 @@ object GeneratorBacktester {
         trainSize: Int,
         window: Int = 200,
         recommendationsCount: Int = 5,
-        candidatesCount: Int = 300
+        candidatesCount: Int = 300,
+        repeats: Int = 5
     ): ScoreModelComparisonResult {
 
         if (draws.size <= trainSize) {
             return ScoreModelComparisonResult(
                 results = emptyList(),
+                repeatResults = emptyList(),
                 randomAverageOverlap = 0.0,
                 randomMatches4OrMore = 0,
                 randomMatches5OrMore = 0,
@@ -197,6 +212,8 @@ object GeneratorBacktester {
             ModelAccumulator()
         }
 
+        val repeatResults = mutableListOf<ScoreModelRepeatResult>()
+
         var randomTotalOverlap = 0
         var randomMatches4OrMore = 0
         var randomMatches5OrMore = 0
@@ -207,7 +224,21 @@ object GeneratorBacktester {
 
         var randomTestedDraws = 0
 
-        for (i in trainSize until draws.size) {
+        for (repeatIndex in 0 until repeats.coerceAtLeast(1)) {
+
+            val basicAccumulator = accumulators.getValue(ScoreModel.BASIC)
+
+            val basicOverlapBefore = basicAccumulator.totalOverlap
+            val basicMatches4Before = basicAccumulator.matches4OrMore
+            val basicMatches5Before = basicAccumulator.matches5OrMore
+            val basicTestedBefore = basicAccumulator.testedDraws
+
+            val randomOverlapBefore = randomTotalOverlap
+            val randomMatches4Before = randomMatches4OrMore
+            val randomMatches5Before = randomMatches5OrMore
+            val randomTestedBefore = randomTestedDraws
+
+            for (i in trainSize until draws.size) {
 
             val history = draws.subList(0, i)
             val actualNumbers = draws[i].numbers.toSet()
@@ -218,7 +249,7 @@ object GeneratorBacktester {
                 history = history,
                 window = window,
                 count = candidatesCount,
-                seed = 12345 + i,
+                seed = 12345 + repeatIndex * draws.size + i,
                 scoreModel = ScoreModel.FULL,
                 returnAllCandidates = true
             )
@@ -303,8 +334,10 @@ object GeneratorBacktester {
 
             repeat(recommendationsCount) { number ->
 
-                val randomNumbers = RandomStrategy
-                    .generateForDraw(i * recommendationsCount + number)
+                val randomNumbers = RandomStrategy.generateForDraw(
+                    repeatIndex * draws.size * recommendationsCount +
+                            i * recommendationsCount + number
+                )
                     .toSet()
 
                 val overlap = randomNumbers
@@ -338,6 +371,40 @@ object GeneratorBacktester {
             }
 
             randomTestedDraws++
+            }
+
+            val basicTested = basicAccumulator.testedDraws - basicTestedBefore
+            val randomTested = randomTestedDraws - randomTestedBefore
+
+            repeatResults.add(
+                ScoreModelRepeatResult(
+                    repeatNumber = repeatIndex + 1,
+
+                    basicAverageOverlap =
+                        if (basicTested > 0 && recommendationsCount > 0) {
+                            (basicAccumulator.totalOverlap - basicOverlapBefore).toDouble() /
+                                    (basicTested * recommendationsCount)
+                        } else {
+                            0.0
+                        },
+                    basicMatches4OrMore =
+                        basicAccumulator.matches4OrMore - basicMatches4Before,
+                    basicMatches5OrMore =
+                        basicAccumulator.matches5OrMore - basicMatches5Before,
+
+                    randomAverageOverlap =
+                        if (randomTested > 0 && recommendationsCount > 0) {
+                            (randomTotalOverlap - randomOverlapBefore).toDouble() /
+                                    (randomTested * recommendationsCount)
+                        } else {
+                            0.0
+                        },
+                    randomMatches4OrMore =
+                        randomMatches4OrMore - randomMatches4Before,
+                    randomMatches5OrMore =
+                        randomMatches5OrMore - randomMatches5Before
+                )
+            )
         }
 
         // ---------------------------------
@@ -384,6 +451,8 @@ object GeneratorBacktester {
 
         return ScoreModelComparisonResult(
             results = modelResults,
+
+            repeatResults = repeatResults,
 
             randomAverageOverlap =
                 if (randomCombinations > 0) {
@@ -680,6 +749,8 @@ object GeneratorBacktester {
 
             testedDraws++
         }
+
+
 
         val testedCombinations =
             testedDraws * recommendationsCount

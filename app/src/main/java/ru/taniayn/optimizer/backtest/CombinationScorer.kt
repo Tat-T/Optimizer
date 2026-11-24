@@ -24,6 +24,17 @@ enum class ScoreModel {
     FULL
 }
 
+data class ScoreWeights(
+    val frequency: Double = 0.20,
+    val balance: Double = 0.15,
+    val parity: Double = 0.10,
+    val sum: Double = 0.15,
+    val additional: Double = 0.10,
+    val pair: Double = 0.15,
+    val trend: Double = 0.10,
+    val gap: Double = 0.05
+)
+
 object CombinationScorer {
 
     data class PreparedStats(
@@ -141,7 +152,8 @@ object CombinationScorer {
         combination: List<Int>,
         stats: PreparedStats,
         additionalNumber: Int,
-        scoreModel: ScoreModel = ScoreModel.FULL
+        scoreModel: ScoreModel = ScoreModel.FULL,
+        weights: ScoreWeights = ScoreWeights()
     ): CombinationScore {
 
         if (
@@ -260,14 +272,14 @@ object CombinationScorer {
             }
 
             ScoreModel.FULL -> {
-                frequencyScore * 0.25 +
-                        balanceScore * 0.15 +
-                        parityScore * 0.10 +
-                        sumScore * 0.10 +
-                        additionalScore * 0.10 +
-                        pairScore * 0.10 +
-                        trendScore * 0.10 +
-                        gapScore * 0.10
+                frequencyScore * weights.frequency +
+                        balanceScore * weights.balance +
+                        parityScore * weights.parity +
+                        sumScore * weights.sum +
+                        additionalScore * weights.additional +
+                        pairScore * weights.pair +
+                        trendScore * weights.trend +
+                        gapScore * weights.gap
             }
         }
 
@@ -707,7 +719,14 @@ object CombinationScorer {
             }
 
             ScoreModel.FULL -> {
-                item.score
+                item.frequencyScore * 0.20 +
+                        item.balanceScore * 0.15 +
+                        item.parityScore * 0.10 +
+                        item.sumScore * 0.15 +
+                        item.additionalScore * 0.10 +
+                        item.pairScore * 0.15 +
+                        item.trendScore * 0.10 +
+                        item.gapScore * 0.05
             }
         }
     }
